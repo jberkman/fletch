@@ -6,8 +6,8 @@ The compiler implementation is based on the 1988 edition of the [dragon book](ht
 I found my copy at a sidewalk library in San Francisco.
 The Java implementation is based on the original edition of The Java<sup>TM</sup> Language Specification by Gosling, Joy, and Steele.
 I probably got my copy from Borders when I was in high school in 1996.
-It is not intended to be practical.
 Fletch is named after R.J. Fletcher, the antagonist from [the film UHF](https://en.wikipedia.org/wiki/UHF_(film)).
+It is not intended to be practical.
 
 jacob berkman\
 san francisco, ca\
