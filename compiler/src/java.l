@@ -1,12 +1,12 @@
 %%
 
-\{ "lbrace"
-} "rbrace"
-; "semic"
+\{ "LBRACE"
+} "RBRACE"
+; "SEMIC"
 
 class "class"
 
-[A-Za-z_$\p{Letter}][0-9A-Za-z_$\p{Letter}]* "id"
+[A-Za-z_$\p{Letter}][0-9A-Za-z_$\p{Letter}]* "ID"
 
 /\*[^*].*\*/ ;
 

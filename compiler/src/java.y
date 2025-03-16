@@ -7,7 +7,7 @@
 // Lexical Structure
 
 Id -> Result<Id, ()>:
-    'id' { Ok(Id { span: $span }) }
+    'ID' { Ok(Id { span: $span }) }
     ;
 
 // Types, Values, and Vars
@@ -36,7 +36,7 @@ TypeDecls -> Result<TypeDecls, ()>:
 
 TypeDecl -> Result<TypeDecl, ()>:
     ClassDecl { Ok(TypeDecl::Class($1?)) }
-    | 'semic' { Ok(TypeDecl::EOS($span)) }
+    | 'SEMIC' { Ok(TypeDecl::EOS($span)) }
     ;
 
 // Only in LALR(1) Grammer
@@ -50,7 +50,7 @@ ClassDecl -> Result<ClassDecl, ()>:
     ;
 
 ClassBody -> Result<ClassBody, ()>:
-    'lbrace' 'rbrace' { Ok(ClassBody { span: $span }) }
+    'LBRACE' 'RBRACE' { Ok(ClassBody { span: $span }) }
     ;
 
 //// Field Decls
