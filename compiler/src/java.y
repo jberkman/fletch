@@ -1,32 +1,76 @@
-%start Expr
+// The Syntactic Grammar
+
+%start CompilationUnit
+
 %%
-Expr -> Result<u64, ()>:
-      Expr '+' Term { Ok($1? + $3?) }
-    | Term { $1 }
+
+// Lexical Structure
+
+Id -> Result<Id, ()>:
+    'id' { Ok(Id { span: $span }) }
     ;
 
-Term -> Result<u64, ()>:
-      Term '*' Factor { Ok($1? * $3?) }
-    | Factor { $1 }
+// Types, Values, and Vars
+
+// Names
+
+// Packages
+
+CompilationUnit -> Result<CompilationUnit, ()>:
+    TypeDeclsOpt { Ok(CompilationUnit { span: $span, type_decls: $1? }) }
     ;
 
-Factor -> Result<u64, ()>:
-      '(' Expr ')' { $2 }
-    | 'INT'
-      {
-          let v = $1.map_err(|_| ())?;
-          parse_int($lexer.span_str(v.span()))
-      }
+TypeDeclsOpt -> Result<Option<TypeDecls>, ()>:
+    TypeDecls { Ok(Some($1?)) }
+    | /* opt */ { Ok(None) }
     ;
-%%
-// Any functions here are in scope for all the grammar actions above.
 
-fn parse_int(s: &str) -> Result<u64, ()> {
-    match s.parse::<u64>() {
-        Ok(val) => Ok(val),
-        Err(_) => {
-            eprintln!("{} cannot be represented as a u64", s);
-            Err(())
-        }
+TypeDecls -> Result<TypeDecls, ()>:
+    TypeDecl { Ok(TypeDecls { span: $span, items: vec![$1?] }) }
+    | TypeDecls TypeDecl { 
+        let mut v = $1?;
+        v.push($2?);
+        Ok(v)
     }
-}
+    ;
+
+TypeDecl -> Result<TypeDecl, ()>:
+    ClassDecl { Ok(TypeDecl::Class($1?)) }
+    | ';' { Ok(TypeDecl::EOS($span)) }
+    ;
+
+// Only in LALR(1) Grammer
+
+// Classes
+
+//// Class Decl
+
+ClassDecl -> Result<ClassDecl, ()>:
+    'class' Id ClassBody { Ok(ClassDecl { span: $span, id: Box::new($2?), body: Box::new($3?) }) }
+    ;
+
+ClassBody -> Result<ClassBody, ()>:
+    '{' '}' { Ok(ClassBody { span: $span }) }
+    ;
+
+//// Field Decls
+
+//// Method Decls
+
+//// Static Inits
+
+//// Ctor Decls
+
+// Interfaces
+
+//// Interface Decls
+
+// Arrays
+
+// Blocks and Statements
+
+// Expressions
+
+%%
+
+use crate::ast::*;

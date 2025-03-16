@@ -96,6 +96,7 @@ name = "fletch-compiler"
 version = "0.1.0"
 dependencies = [
  "cfgrammar",
+ "getopts",
  "lrlex",
  "lrpar",
 ]
