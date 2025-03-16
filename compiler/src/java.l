@@ -4,7 +4,7 @@
 } "RBRACE"
 ; "SEMIC"
 
-class "class"
+class "CLASS"
 
 [A-Za-z_$\p{Letter}][0-9A-Za-z_$\p{Letter}]* "ID"
 

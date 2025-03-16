@@ -46,7 +46,7 @@ TypeDecl -> Result<TypeDecl, ()>:
 //// Class Decl
 
 ClassDecl -> Result<ClassDecl, ()>:
-    'class' Id ClassBody { Ok(ClassDecl { span: $span, id: Box::new($2?), body: Box::new($3?) }) }
+    'CLASS' Id ClassBody { Ok(ClassDecl { span: $span, id: Box::new($2?), body: Box::new($3?) }) }
     ;
 
 ClassBody -> Result<ClassBody, ()>:
