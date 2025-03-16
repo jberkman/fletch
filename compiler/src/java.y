@@ -36,7 +36,7 @@ TypeDecls -> Result<TypeDecls, ()>:
 
 TypeDecl -> Result<TypeDecl, ()>:
     ClassDecl { Ok(TypeDecl::Class($1?)) }
-    | ';' { Ok(TypeDecl::EOS($span)) }
+    | 'semic' { Ok(TypeDecl::EOS($span)) }
     ;
 
 // Only in LALR(1) Grammer
@@ -50,7 +50,7 @@ ClassDecl -> Result<ClassDecl, ()>:
     ;
 
 ClassBody -> Result<ClassBody, ()>:
-    '{' '}' { Ok(ClassBody { span: $span }) }
+    'lbrace' 'rbrace' { Ok(ClassBody { span: $span }) }
     ;
 
 //// Field Decls

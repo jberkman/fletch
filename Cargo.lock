@@ -99,6 +99,7 @@ dependencies = [
  "getopts",
  "lrlex",
  "lrpar",
+ "regex",
 ]
 
 [[package]]
