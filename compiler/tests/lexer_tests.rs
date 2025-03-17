@@ -3,6 +3,24 @@ use lrpar::{Lexeme, Lexer};
 
 lrlex_mod!("java.l");
 
+macro_rules! test_empty {
+    ($name:ident, $input:expr) => {
+        #[test]
+        fn $name() {
+            lex_and_cmp($input, vec![]);
+        }
+    };
+}
+
+macro_rules! test_token {
+    ($name:ident, $input:expr, $token:ident) => {
+        #[test]
+        fn $name() {
+            lex_and_cmp($input, vec![java_l::$token]);
+        }
+    };
+}
+
 fn lex_and_cmp(input: &str, expected: Vec<u32>) {
     let lexerdef = java_l::lexerdef();
     let lexer = lexerdef.lexer(input);
@@ -15,31 +33,11 @@ mod sep {
     use super::lex_and_cmp;
     use super::java_l;
 
-    #[test]
-    fn test_lparen() {
-        lex_and_cmp("(", vec![java_l::T_LPAREN]);
-    }
-
-    #[test]
-    fn test_rparen() {
-        lex_and_cmp(")", vec![java_l::T_RPAREN]);
-    }
-
-    #[test]
-    fn test_lbrace() {
-        lex_and_cmp("{", vec![java_l::T_LBRACE]);
-    }
-
-    #[test]
-    fn test_rbrace() {
-        lex_and_cmp("}", vec![java_l::T_RBRACE]);
-    }
-
-    #[test]
-    fn test_semic() {
-        lex_and_cmp(";", vec![java_l::T_SEMIC]);
-    }
-
+    test_token!(test_lparen, "(", T_LPAREN);
+    test_token!(test_rparen, ")", T_RPAREN);
+    test_token!(test_lbrace, "{", T_LBRACE);
+    test_token!(test_rbrace, "}", T_RBRACE);
+    test_token!(test_semic, ";", T_SEMIC);
 }
 
 #[cfg(test)]
@@ -47,15 +45,17 @@ mod kw {
     use super::lex_and_cmp;
     use super::java_l;
 
-    #[test]
-    fn test_class() {
-        lex_and_cmp("class", vec![java_l::T_CLASS]);
-    }
-
-    #[test]
-    fn test_void() {
-        lex_and_cmp("void", vec![java_l::T_VOID]);
-    }
+    test_token!(test_abstract, "abstract", T_ABSTRACT);
+    test_token!(test_class, "class", T_CLASS);
+    test_token!(test_final, "final", T_FINAL);
+    test_token!(test_native, "native", T_NATIVE);
+    test_token!(test_private, "private", T_PRIVATE);
+    test_token!(test_protected, "protected", T_PROTECTED);
+    test_token!(test_public, "public", T_PUBLIC);
+    test_token!(test_static, "static", T_STATIC);
+    test_token!(test_synchronized, "synchronized", T_SYNCHRONIZED);
+    test_token!(test_void, "void", T_VOID);
+    test_token!(test_volatile, "volatile", T_VOLATILE);
 
 }
 
@@ -64,79 +64,37 @@ mod id {
     use super::lex_and_cmp;
     use super::java_l;
 
-    #[test]
-    fn test_x() {
-        lex_and_cmp("a", vec![java_l::T_ID]);
-    }
-
-    #[test]
-    fn test_dollar() {
-        lex_and_cmp("$", vec![java_l::T_ID]);
-    }
-
-    #[test]
-    fn test_underscore() {
-        lex_and_cmp("_", vec![java_l::T_ID]);
-    }
-
-    #[test]
-    fn test_strange() {
-        lex_and_cmp("_$f00B4r", vec![java_l::T_ID]);
-    }
+    test_token!(test_x, "x", T_ID);
+    test_token!(test_dollar, "$", T_ID);
+    test_token!(test_underscore, "_", T_ID);
+    test_token!(test_strange, "_$f00B4r", T_ID);
 }
 #[cfg(test)]
 mod cmnt {
     use super::lex_and_cmp;
 
-    #[test]
-    fn test_trad() {
-        lex_and_cmp("/* foo bar baz */", vec![]);
-    }
+    test_empty!(test_trad, "/* foo bar baz */");
 
-    #[test]
-    fn test_trad_with_cmnts() {
-        lex_and_cmp("/* this comment /* // /** ends here:  */", vec![]);
-    }
+    test_empty!(test_trad_with_cmnts, "/* this comment /* // /** ends here:  */");
 
-    #[test]
-    fn test_doc() {
-        lex_and_cmp("/** foo bar baz */", vec![]);
-    }
+    test_empty!(test_doc, "/** foo bar baz */");
 
-    #[test]
-    fn test_eol_ff() {
-        lex_and_cmp("// foo bar baz\x0c", vec![]);
-    }
+    test_empty!(test_eol_ff, "// foo bar baz\x0c");
 
-    #[test]
-    fn test_eol_nl() {
-        lex_and_cmp("// foo bar baz\n", vec![]);
-    }
+    test_empty!(test_eol_nl, "// foo bar baz\n");
 
-    #[test]
-    fn test_eol_cr() {
-        lex_and_cmp("// foo bar baz\r", vec![]);
-    }
+    test_empty!(test_eol_cr, "// foo bar baz\r");
 
-    #[test]
-    fn test_eol_crlf() {
-        lex_and_cmp("// foo bar baz\r\n", vec![]);
-    }
+    test_empty!(test_eol_crlf, "// foo bar baz\r\n");
 
-    #[test]
-    fn test_eol_with_trad() {
-        lex_and_cmp("// /* foo bar baz */\n", vec![]);
-    }
+    test_empty!(test_eol_with_trad, "// /* foo bar baz */\n");
 }
 
 #[cfg(test)]
 mod ws {
     use super::lex_and_cmp;
 
-    #[test]
-    fn test_sp() {
-        lex_and_cmp(" ", vec![]);
-    }
+    test_empty!(test_sp, " ");
 
     #[test]
     #[should_panic]
@@ -146,27 +104,12 @@ mod ws {
         lex_and_cmp("\\u0020", vec![]);
     }
 
-    #[test]
-    fn test_ht() {
-        lex_and_cmp("\t", vec![]);
-    }
+    test_empty!(test_ht, "\t");
 
-    #[test]
-    fn test_ff() {
-        lex_and_cmp("\x0c", vec![]);
-    }
+    test_empty!(test_ff, "\x0c");
 
-    #[test]
-    fn test_lf() {
-        lex_and_cmp("\n", vec![]);
-    }
+    test_empty!(test_lf, "\n");
 
-    #[test]
-    fn test_cr() {
-        lex_and_cmp("\r", vec![]);
-    }
-    #[test]
-    fn test_crlf() {
-        lex_and_cmp("\r\n", vec![]);
-    }
+    test_empty!(test_cr, "\r");
+    test_empty!(test_crlf, "\r\n");
 }
