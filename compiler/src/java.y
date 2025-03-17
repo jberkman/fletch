@@ -10,6 +10,18 @@ Id -> Result<Id, ()>:
     'ID' { Ok(Id { span: $span }) }
     ;
 
+Literal -> Result<Literal, ()>:
+    "DEC" { Ok(Literal { span: $span, kind: LiteralKind::Decimal($1?) }) }
+    | "HEX" { Ok(Literal { span: $span, kind: LiteralKind::Hexadecimal($1?) }) }
+    | "OCT" { Ok(Literal { span: $span, kind: LiteralKind::Octal($1?) }) }
+    | "FLT" { Ok(Literal { span: $span, kind: LiteralKind::FloatingPoint($1?) }) }
+    | "FALSE" { Ok(Literal { span: $span, kind: LiteralKind::Boolean(false) }) }
+    | "TRUE" { Ok(Literal { span: $span, kind: LiteralKind::Bolean(true) }) }
+    | "CHR" { Ok(Literal { span: $span, kind: LiteralKind::Character($1?) }) }
+    | "STR" { Ok(Literal { span: $span, kind: LiteralKind::String($1?) }) }
+    | "NULL" { Ok(Literal { span: $span, kind: LiteralKind::Null }) }
+    ;
+
 // Types, Values, and Vars
 
 Type -> Result<Type, ()>:
@@ -182,6 +194,99 @@ FormalParam -> Result<FormalParam, ()>:
 // Blocks and Statements
 
 // Expressions
+
+Primary -> Result<Primary, ()>:
+    PrimaryNoNewArray { Ok(Primary { span: $span, kind: PrimaryKind::NoNewArray($1?) }) }
+    ;
+
+PrimaryNoNewArray -> Result<PrimaryNoNewArray, ()>:
+    Literal { Ok(PrimaryNoNewArray { span: $span, kind: PrimaryNoNewArrayKind::Literal($1?) }) }
+    | MethodInvocation { Ok(PrimaryNoNewArray { span: $span, kind: PrimaryNoNewArrayKind::MethodInvocation($1?) }) }
+    ;
+
+ArgumentListOpt -> Result<Option<ArgumentList>, ()>:
+    ArgumentList { Ok(Some($1?)) }
+    | /* opt */ { Ok(None) }
+    ;
+
+ArgumentList -> Result<ArgumentList, ()>:
+    Expression { Ok(ArgumentList { span: $span, items: vec![$1?] }) }
+    | ArgumentList 'COMMA' Expression {
+        let mut v = $1?;
+        v.push($3?);
+        Ok(v)
+    }
+    ;
+
+MethodInvocation -> Result<MethodInvocation, ()>:
+    Primary 'DOT' Id 'LPAREN' ArgumentListOpt 'RPAREN' { 
+        Ok(MethodInvocation { span: $span, kind: MethodInvocationKind::Primary($1?, $2?, $3?) })
+    }
+    ;
+
+PostfixExpression -> Result<PostfixExpression, ()>:
+    Primary { Ok(PostfixExpression { span: $span, kind: PostfixExpressionKind::Primary($1?) }) }
+    ;
+
+UnaryExpressionNotPlusMinus -> Result<UnaryExpressionNotPlusMinus, ()>:
+    PostfixExpression { Ok(UnaryExpressionNotPlusMinus { span: $span, kind: UnaryExpressionNotPlusMinusKind::Postfix($1?) }) }
+    ;
+
+UnaryExpression -> Result<UnaryExpression, ()>:
+    UnaryExpressionNotPlusMinus { Ok(UnaryExpression { span: $span, kind: UnaryExpressionKind::NotPlusMinus($1?) }) }
+    ;
+
+MultiplicativeExpression -> Result<MultiplicativeExpression, ()>:
+    UnaryExpression { Ok(MultiplicativeExpression { span: $span, kind: MultiplicativeExpressionKind::Unary($1?) }) }
+    ;
+
+AdditiveExpression -> Result<AdditiveExpression, ()>:
+    MultiplicativeExpression { Ok(AdditiveExpression { span: $span, kind: AdditiveExpressionKind::Multiplicative($1?) }) }
+    ;
+
+ShiftExpression -> Result<ShiftExpression, ()>:
+    AdditiveExpression { Ok(ShiftExpression { span: $span, kind: ShiftExpressionKind::Additive($1?) }) }
+    ;
+
+RelationalExpression -> Result<RelationalExpression, ()>:
+    ShiftExpression { Ok(RelationalExpression { span: $span, kind: RelationalExpressionKind::Shift($1?) }) }
+    ;
+
+EqualityExpression -> Result<EqualityExpression, ()>:
+    RelationalExpression { Ok(EqualityExpression { span: $span, kind: EqualityExpressionKind::Relational($1?) }) }
+    ;
+
+AndExpression -> Result<AndExpression, ()>:
+    EqualityExpression { Ok(AndExpression { span: $span, kind: AndExpressionKind::Equality($1?) }) }
+    ;
+
+ExclusiveOrExpression -> Result<ExclusiveOrExpression, ()>:
+    AndExpression { Ok(ExclusiveOrExpression { span: $span, kind: ExclusiveOrExpressionKind::And($1?) }) }
+    ;
+
+InclusiveOrExpression -> Result<InclusiveOrExpression, ()>:
+    ExclusiveOrExpression { Ok(InclusiveOrExpression { span: $span, kind: InclusiveOrExpressionKind::ExclusiveOr($1?) }) }
+    ;
+
+ConditionalAndExpression -> Result<ConditionalAndExpression, ()>:
+    InclusiveOrExpression { Ok(ConditionalAndExpression { span: $span, kind: ConditionalAndExpressionKind::InclusiveOr($1?) }) }
+    ;
+
+ConditionalOrExpression -> Result<ConditionalOrExpression, ()>:
+    ConditionalAndExpression { Ok(ConditionalOrExpression { span: $span, kind: ConditionalOrExpressionKind::ConditionalAnd($1?) }) }
+    ;
+
+ConditionalExpression -> Result<ConditionalExpression, ()>:
+    ConditionalOrExpression { Ok(ConditionalExpression { span: $span, kind: ConditionalExpressionKind::ConitionalOr($1?) }) }
+    ;
+
+AssignmentExpression -> Result<AssignmentExpression, ()>:
+    ConditionalExpression { Ok(AssignmentAxpression { span: $span, kind: AssignmentExpressionKind::Conditional($1?) }) }
+    ;
+
+Expression -> Result<Expression, ()>:
+    AssignmentExpression { Ok(Expression { span: $span, kind: ExpressionKind::Assignment($1?) }) }
+    ;
 
 %%
 
