@@ -84,19 +84,12 @@ mod cmnt {
     use super::lex_and_cmp;
 
     test_empty!(test_trad, "/* foo bar baz */");
-
     test_empty!(test_trad_with_cmnts, "/* this comment /* // /** ends here:  */");
-
     test_empty!(test_doc, "/** foo bar baz */");
-
     test_empty!(test_eol_ff, "// foo bar baz\x0c");
-
     test_empty!(test_eol_nl, "// foo bar baz\n");
-
     test_empty!(test_eol_cr, "// foo bar baz\r");
-
     test_empty!(test_eol_crlf, "// foo bar baz\r\n");
-
     test_empty!(test_eol_with_trad, "// /* foo bar baz */\n");
 }
 
@@ -105,6 +98,11 @@ mod ws {
     use super::lex_and_cmp;
 
     test_empty!(test_sp, " ");
+    test_empty!(test_ht, "\t");
+    test_empty!(test_ff, "\x0c");
+    test_empty!(test_lf, "\n");
+    test_empty!(test_cr, "\r");
+    test_empty!(test_crlf, "\r\n");
 
     #[test]
     #[should_panic]
@@ -113,13 +111,31 @@ mod ws {
         // ASCII
         lex_and_cmp("\\u0020", vec![]);
     }
+}
 
-    test_empty!(test_ht, "\t");
-
-    test_empty!(test_ff, "\x0c");
-
-    test_empty!(test_lf, "\n");
-
-    test_empty!(test_cr, "\r");
-    test_empty!(test_crlf, "\r\n");
+#[test]
+fn test_hello() {
+    lex_and_cmp(r#"
+        class Hello {
+            public static void main(String[] args) {
+            }
+        }
+    "#, vec![ 
+        java_l::T_CLASS,
+        java_l::T_ID,
+        java_l::T_LBRACE,
+        java_l::T_PUBLIC,
+        java_l::T_STATIC,
+        java_l::T_VOID,
+        java_l::T_ID,
+        java_l::T_LPAREN,
+        java_l::T_ID,
+        java_l::T_LBRACKET,
+        java_l::T_RBRACKET,
+        java_l::T_ID,
+        java_l::T_RPAREN,
+        java_l::T_LBRACE,
+        java_l::T_RBRACE,
+        java_l::T_RBRACE,
+    ]);
 }
