@@ -12,6 +12,34 @@ Id -> Result<Id, ()>:
 
 // Types, Values, and Vars
 
+Type -> Result<Type, ()>:
+    PrimitiveType { Ok(Type { span: $span, kind: TypeKind::Primitive($1?) }) }
+    //| ReferenceType { Ok(Type { span: $span, kind: TypeKind::Reference }) }
+    ;
+
+PrimitiveType -> Result<PrimitiveType, ()>:
+    NumericType { Ok(PrimitiveType { span: $span, kind: PrimitiveTypeKind::Numeric($1?) }) }
+    | 'BOOLEAN' { Ok(PrimitiveType { span: $span, kind: PrimitiveTypeKind::Boolean }) }
+    ;
+
+NumericType -> Result<NumericType, ()>:
+    IntegralType { Ok(NumericType { span: $span, kind: NumericTypeKind::Integral($1?) }) }
+    | FloatingPointType { Ok(NumericType { span: $span, kind: NumericTypeKind::FloatingPoint($1?) }) }
+    ;
+
+IntegralType -> Result<IntegralType, ()>:
+    'BYTE' { Ok(IntegralType { span: $span, kind: IntegralTypeKind::Byte }) }
+    | 'SHORT' { Ok(IntegralType { span: $span, kind: IntegralTypeKind::Short }) }
+    | 'INT' { Ok(IntegralType { span: $span, kind: IntegralTypeKind::Int }) }
+    | 'LONG' { Ok(IntegralType { span: $span, kind: IntegralTypeKind::Long }) }
+    | 'CHAR' { Ok(IntegralType { span: $span, kind: IntegralTypeKind::Char }) }
+    ;
+
+FloatingPointType -> Result<FloatingPointType, ()>:
+    'FLOAT' { Ok(FloatingPointType { span: $span, kind: FloatingPointTypeKind::Float }) }
+    | 'DOUBLE' { Ok(FloatingPointType { span: $span, kind: FloatingPointTypeKind::Double }) }
+    ;
+
 // Names
 
 // Packages
@@ -104,6 +132,11 @@ ClassMemberDecl -> Result<ClassMemberDecl, ()>:
 
 //// Field Decls
 
+VarDecltorId -> Result<VarDecltorId, ()>:
+    Id { Ok(VarDecltorId { span: $span, kind: VarDecltorIdKind::Id($1?) }) }
+    | VarDecltorId 'LBRACKET' 'RBRACKET' { Ok(VarDecltorId { span: $span, kind: VarDecltorIdKind::ArrayOf(Box::new($1?)) }) }
+    ;
+
 //// Method Decls
 
 MethodDecl -> Result<MethodDecl, ()>:
@@ -115,7 +148,25 @@ MethodHeader -> Result<MethodHeader, ()>:
     ;
 
 MethodDecltor -> Result<MethodDecltor, ()>:
-    Id 'LPAREN' 'RPAREN' { Ok(MethodDecltor { span: $span, id: $1?, params: None }) }
+    Id 'LPAREN' FormalParamsOpt 'RPAREN' { Ok(MethodDecltor { span: $span, id: $1?, params: None }) }
+    ;
+
+FormalParamsOpt -> Result<Option<FormalParams>, ()>:
+    FormalParams { Ok(Some($1?)) }
+    | /* opt */ { Ok(None) }
+    ;
+
+FormalParams -> Result<FormalParams, ()>:
+    FormalParam { Ok(FormalParams { span: $span, items: vec![$1?]} )}
+    | FormalParams FormalParam {
+        let mut v = $1?;
+        v.push($2?);
+        Ok(v)
+    }
+    ;
+
+FormalParam -> Result<FormalParam, ()>:
+    Type VarDecltorId { Ok(FormalParam { span: $span, type_: $1?, var_decltor_id: $2? }) }
     ;
 
 //// Static Inits

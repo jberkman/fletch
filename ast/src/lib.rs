@@ -51,6 +51,45 @@ pub struct Id {
     pub span: Span,
 }
 
+// Types, Values, and Vars
+
+#[derive(Clone, Debug)]
+pub enum TypeKind {
+    Primitive(PrimitiveType),
+}
+
+pub type Type = KindOf<TypeKind>;
+
+#[derive(Clone, Debug)]
+pub enum PrimitiveTypeKind {
+    Numeric(NumericType),
+    Boolean,
+}
+
+pub type PrimitiveType = KindOf<PrimitiveTypeKind>;
+
+#[derive(Clone, Debug)]
+pub enum NumericTypeKind {
+    Integral(IntegralType),
+    FloatingPoint(FloatingPointType),
+}
+
+pub type NumericType = KindOf<NumericTypeKind>;
+
+#[derive(Clone, Debug)]
+pub enum IntegralTypeKind {
+    Byte, Short, Int, Long, Char,
+}
+
+pub type IntegralType = KindOf<IntegralTypeKind>;
+
+#[derive(Clone, Debug)]
+pub enum FloatingPointTypeKind {
+    Float, Double,
+}
+
+pub type FloatingPointType = KindOf<FloatingPointTypeKind>;
+
 // Names
 
 // Packages
@@ -123,6 +162,14 @@ pub type ClassMemberDecl = KindOf<ClassMemberDeclKind>;
 
 //// Field Decls
 
+#[derive(Clone, Debug)]
+pub enum VarDecltorIdKind {
+    Id(Id),
+    ArrayOf(Box<VarDecltorId>),
+}
+
+pub type VarDecltorId = KindOf<VarDecltorIdKind>;
+
 //// Method Decls
 
 #[derive(Clone, Debug, Spanned)]
@@ -148,6 +195,8 @@ pub struct MethodDecltor {
 #[derive(Clone, Debug, Spanned)]
 pub struct FormalParam {
     pub span: Span,
+    pub type_: Type,
+    pub var_decltor_id: VarDecltorId,
 }
 
 pub type FormalParams = SpannedVec<FormalParam>;

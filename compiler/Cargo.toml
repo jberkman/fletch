@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "6502-eater-none-javac"
+name = "6502-eater-woz-javac"
 path = "src/main.rs"
 
 [dependencies]

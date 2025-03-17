@@ -46,13 +46,13 @@ fn main() {
             .read_to_string(&mut data)
             .expect("Failed to read file");
         let lexer = lexerdef.lexer(&data);
-        for lexeme in lexer.iter() {
+        for (i, lexeme) in lexer.iter().enumerate() {
             match lexeme {
                 Ok(lexeme) => {
-                    println!("{} => {}", lexeme.tok_id(), lexer.span_str(lexeme.span()));
+                    println!("[{:4}] ({:2}) {}", i, lexeme.tok_id(), lexer.span_str(lexeme.span()));
                 }
                 Err(err) => {
-                    println!("Error: {}", err);
+                    println!("[{:4}] Error: {}", i, err);
                 }
             }
         }

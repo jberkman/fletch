@@ -37,6 +37,8 @@ mod sep {
     test_token!(test_rparen, ")", T_RPAREN);
     test_token!(test_lbrace, "{", T_LBRACE);
     test_token!(test_rbrace, "}", T_RBRACE);
+    test_token!(test_lbracket, "[", T_LBRACKET);
+    test_token!(test_rbracket, "]", T_RBRACKET);
     test_token!(test_semic, ";", T_SEMIC);
 }
 
@@ -46,12 +48,20 @@ mod kw {
     use super::java_l;
 
     test_token!(test_abstract, "abstract", T_ABSTRACT);
+    test_token!(test_boolean, "boolean", T_BOOLEAN);
+    test_token!(test_byte, "byte", T_BYTE);
+    test_token!(test_char, "char", T_CHAR);
     test_token!(test_class, "class", T_CLASS);
+    test_token!(test_double, "double", T_DOUBLE);
     test_token!(test_final, "final", T_FINAL);
+    test_token!(test_float, "float", T_FLOAT);
+    test_token!(test_int, "int", T_INT);
+    test_token!(test_long, "long", T_LONG);
     test_token!(test_native, "native", T_NATIVE);
     test_token!(test_private, "private", T_PRIVATE);
     test_token!(test_protected, "protected", T_PROTECTED);
     test_token!(test_public, "public", T_PUBLIC);
+    test_token!(test_short, "short", T_SHORT);
     test_token!(test_static, "static", T_STATIC);
     test_token!(test_synchronized, "synchronized", T_SYNCHRONIZED);
     test_token!(test_void, "void", T_VOID);
