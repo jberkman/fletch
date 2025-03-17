@@ -1,5 +1,5 @@
-use lrlex::{lrlex_mod, DefaultLexeme};
-use lrpar::{Lexeme, Lexer, NonStreamingLexer};
+use lrlex::lrlex_mod;
+use lrpar::{Lexeme, Lexer};
 
 lrlex_mod!("java.l");
 
@@ -14,6 +14,16 @@ fn lex_and_cmp(input: &str, expected: Vec<u32>) {
 mod sep {
     use super::lex_and_cmp;
     use super::java_l;
+
+    #[test]
+    fn test_lparen() {
+        lex_and_cmp("(", vec![java_l::T_LPAREN]);
+    }
+
+    #[test]
+    fn test_rparen() {
+        lex_and_cmp(")", vec![java_l::T_RPAREN]);
+    }
 
     #[test]
     fn test_lbrace() {
@@ -40,6 +50,11 @@ mod kw {
     #[test]
     fn test_class() {
         lex_and_cmp("class", vec![java_l::T_CLASS]);
+    }
+
+    #[test]
+    fn test_void() {
+        lex_and_cmp("void", vec![java_l::T_VOID]);
     }
 
 }

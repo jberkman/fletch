@@ -1,10 +1,7 @@
-use lrlex::lrlex_mod;
-use lrpar::{lrpar_mod, Lexer, NonStreamingLexer, Lexeme};
-
 use getopts::Options;
+use lrlex::lrlex_mod;
+use lrpar::{lrpar_mod, Lexeme, Lexer, NonStreamingLexer};
 use std::{env, fs::File, io::Read};
-
-mod ast;
 
 lrlex_mod!("java.l");
 lrpar_mod!("java.y");
@@ -44,7 +41,8 @@ fn main() {
     for file in matches.free.iter() {
         println!("Parsing file: {}", file);
         let mut data = String::new();
-        File::open(file).expect("Failed to read file")
+        File::open(file)
+            .expect("Failed to read file")
             .read_to_string(&mut data)
             .expect("Failed to read file");
         let lexer = lexerdef.lexer(&data);

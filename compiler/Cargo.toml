@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 cfgrammar = "0.13"
+fletch-ast = { path = "../ast" }
 getopts = "0.2"
 lrlex = "0.13"
 lrpar = "0.13"
@@ -18,3 +19,4 @@ regex = "1"
 cfgrammar = "0.13"
 lrlex = "0.13"
 lrpar = "0.13"
+fletch-ast = { path = "../ast" }

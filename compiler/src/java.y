@@ -35,27 +35,88 @@ TypeDecls -> Result<TypeDecls, ()>:
     ;
 
 TypeDecl -> Result<TypeDecl, ()>:
-    ClassDecl { Ok(TypeDecl::Class($1?)) }
-    | 'SEMIC' { Ok(TypeDecl::EOS($span)) }
+    ClassDecl { Ok(TypeDecl { span: $span, kind: TypeDeclKind::Class($1?) }) }
+    | 'SEMIC' { Ok(TypeDecl { span: $span, kind: TypeDeclKind::EOS }) }
     ;
 
 // Only in LALR(1) Grammer
+
+ModifiersOpt -> Result<Option<Modifiers>, ()>:
+    Modifiers { Ok(Some($1?)) }
+    | /* opt */ { Ok(None) }
+    ;
+
+Modifiers -> Result<Modifiers, ()>:
+    Modifier { Ok(Modifiers { span: $span, items: vec![$1?]}) }
+    | Modifiers Modifier {
+        let mut v = $1?;
+        v.push($2?);
+        Ok(v)
+    }
+    ;
+
+Modifier -> Result<Modifier, ()>:
+    'ABSTRACT' { Ok(Modifier { span: $span, kind: ModifierKind::Abstract }) }
+    | 'FINAL' { Ok(Modifier { span: $span, kind: ModifierKind::Final }) }
+    | 'NATIVE' { Ok(Modifier { span: $span, kind: ModifierKind::Native }) }
+    | 'PRIVATE' { Ok(Modifier { span: $span, kind: ModifierKind::Private }) }
+    | 'PROTECTED' { Ok(Modifier { span: $span, kind: ModifierKind::Protected }) }
+    | 'PUBLIC' { Ok(Modifier { span: $span, kind: ModifierKind::Public }) }
+    | 'STATIC' { Ok(Modifier { span: $span, kind: ModifierKind::Static }) }
+    | 'SYNCHRONIZED' { Ok(Modifier { span: $span, kind: ModifierKind::Synchronized}) }
+    | 'TRANSIENT' { Ok(Modifier { span: $span, kind: ModifierKind::Transient}) }
+    | 'VOLATILE' { Ok(Modifier { span: $span, kind: ModifierKind::Volatile }) }
+    ;
 
 // Classes
 
 //// Class Decl
 
 ClassDecl -> Result<ClassDecl, ()>:
-    'CLASS' Id ClassBody { Ok(ClassDecl { span: $span, id: Box::new($2?), body: Box::new($3?) }) }
+    'CLASS' Id ClassBody { Ok(ClassDecl { span: $span, id: $2?, body: $3? }) }
     ;
 
 ClassBody -> Result<ClassBody, ()>:
-    'LBRACE' 'RBRACE' { Ok(ClassBody { span: $span }) }
+    'LBRACE' ClassBodyDeclsOpt 'RBRACE' { Ok(ClassBody { span: $span }) }
+    ;
+
+ClassBodyDeclsOpt -> Result<Option<ClassBodyDecls>, ()>:
+    ClassBodyDecls { Ok(Some($1?)) }
+    | /* opt */ { Ok(None) }
+    ;
+
+ClassBodyDecls -> Result<ClassBodyDecls, ()>:
+    ClassBodyDecl { Ok(ClassBodyDecls { span: $span, items: vec![$1?] }) }
+    | ClassBodyDecls ClassBodyDecl {
+        let mut v = $1?;
+        v.push($2?);
+        Ok(v)
+    }
+    ;
+
+ClassBodyDecl -> Result<ClassBodyDecl, ()>:
+    ClassMemberDecl { Ok(ClassBodyDecl { span: $span, kind: ClassBodyDeclKind::ClassMember($1?) }) }
+    ;
+
+ClassMemberDecl -> Result<ClassMemberDecl, ()>:
+    MethodDecl { Ok(ClassMemberDecl { span: $span, kind: ClassMemberDeclKind::Method($1?) }) }
     ;
 
 //// Field Decls
 
 //// Method Decls
+
+MethodDecl -> Result<MethodDecl, ()>:
+    MethodHeader { Ok(MethodDecl { span: $span, header: $1? }) }
+    ;
+
+MethodHeader -> Result<MethodHeader, ()>:
+    ModifiersOpt 'VOID' MethodDecltor { Ok(MethodHeader { span: $span, modifiers: $1?, decltor: $3? }) }
+    ;
+
+MethodDecltor -> Result<MethodDecltor, ()>:
+    Id 'LPAREN' 'RPAREN' { Ok(MethodDecltor { span: $span, id: $1?, params: None }) }
+    ;
 
 //// Static Inits
 
@@ -73,4 +134,4 @@ ClassBody -> Result<ClassBody, ()>:
 
 %%
 
-use crate::ast::*;
+use fletch_ast::*;
