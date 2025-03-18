@@ -118,6 +118,7 @@ fn test_hello() {
     lex_and_cmp(r#"
         class Hello {
             public static void main(String[] args) {
+                System.out.println("Hello, World!");
             }
         }
     "#, vec![ 
@@ -135,6 +136,15 @@ fn test_hello() {
         java_l::T_ID,
         java_l::T_RPAREN,
         java_l::T_LBRACE,
+        java_l::T_ID,
+        java_l::T_DOT,
+        java_l::T_ID,
+        java_l::T_DOT,
+        java_l::T_ID,
+        java_l::T_LPAREN,
+        java_l::T_STR,
+        java_l::T_RPAREN,
+        java_l::T_SEMIC,
         java_l::T_RBRACE,
         java_l::T_RBRACE,
     ]);

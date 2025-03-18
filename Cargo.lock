@@ -96,15 +96,6 @@ name = "fletch-ast"
 version = "0.1.0"
 dependencies = [
  "cfgrammar",
- "fletch-ast-macros",
-]
-
-[[package]]
-name = "fletch-ast-macros"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn",
 ]
 
 [[package]]
