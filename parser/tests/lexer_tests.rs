@@ -1,7 +1,4 @@
-use lrlex::lrlex_mod;
 use lrpar::{Lexeme, Lexer};
-
-lrlex_mod!("java.l");
 
 macro_rules! test_empty {
     ($name:ident, $input:expr) => {
@@ -16,13 +13,13 @@ macro_rules! test_token {
     ($name:ident, $input:expr, $token:ident) => {
         #[test]
         fn $name() {
-            lex_and_cmp($input, vec![java_l::$token]);
+            lex_and_cmp($input, vec![fletch_parser::$token]);
         }
     };
 }
 
 fn lex_and_cmp(input: &str, expected: Vec<u32>) {
-    let lexerdef = java_l::lexerdef();
+    let lexerdef = fletch_parser::lexerdef();
     let lexer = lexerdef.lexer(input);
     let tokens: Vec<_> = lexer.iter().map(|res| res.unwrap().tok_id()).collect();
     assert_eq!(tokens, expected);
@@ -31,7 +28,6 @@ fn lex_and_cmp(input: &str, expected: Vec<u32>) {
 #[cfg(test)]
 mod sep {
     use super::lex_and_cmp;
-    use super::java_l;
 
     test_token!(test_lparen, "(", T_LPAREN);
     test_token!(test_rparen, ")", T_RPAREN);
@@ -45,7 +41,6 @@ mod sep {
 #[cfg(test)]
 mod kw {
     use super::lex_and_cmp;
-    use super::java_l;
 
     test_token!(test_abstract, "abstract", T_ABSTRACT);
     test_token!(test_boolean, "boolean", T_BOOLEAN);
@@ -72,7 +67,6 @@ mod kw {
 #[cfg(test)]
 mod id {
     use super::lex_and_cmp;
-    use super::java_l;
 
     test_token!(test_x, "x", T_ID);
     test_token!(test_dollar, "$", T_ID);
@@ -122,30 +116,30 @@ fn test_hello() {
             }
         }
     "#, vec![ 
-        java_l::T_CLASS,
-        java_l::T_ID,
-        java_l::T_LBRACE,
-        java_l::T_PUBLIC,
-        java_l::T_STATIC,
-        java_l::T_VOID,
-        java_l::T_ID,
-        java_l::T_LPAREN,
-        java_l::T_ID,
-        java_l::T_LBRACKET,
-        java_l::T_RBRACKET,
-        java_l::T_ID,
-        java_l::T_RPAREN,
-        java_l::T_LBRACE,
-        java_l::T_ID,
-        java_l::T_DOT,
-        java_l::T_ID,
-        java_l::T_DOT,
-        java_l::T_ID,
-        java_l::T_LPAREN,
-        java_l::T_STR,
-        java_l::T_RPAREN,
-        java_l::T_SEMIC,
-        java_l::T_RBRACE,
-        java_l::T_RBRACE,
+        fletch_parser::T_CLASS,
+        fletch_parser::T_ID,
+        fletch_parser::T_LBRACE,
+        fletch_parser::T_PUBLIC,
+        fletch_parser::T_STATIC,
+        fletch_parser::T_VOID,
+        fletch_parser::T_ID,
+        fletch_parser::T_LPAREN,
+        fletch_parser::T_ID,
+        fletch_parser::T_LBRACKET,
+        fletch_parser::T_RBRACKET,
+        fletch_parser::T_ID,
+        fletch_parser::T_RPAREN,
+        fletch_parser::T_LBRACE,
+        fletch_parser::T_ID,
+        fletch_parser::T_DOT,
+        fletch_parser::T_ID,
+        fletch_parser::T_DOT,
+        fletch_parser::T_ID,
+        fletch_parser::T_LPAREN,
+        fletch_parser::T_STR,
+        fletch_parser::T_RPAREN,
+        fletch_parser::T_SEMIC,
+        fletch_parser::T_RBRACE,
+        fletch_parser::T_RBRACE,
     ]);
 }

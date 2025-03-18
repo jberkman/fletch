@@ -1,10 +1,6 @@
 use getopts::Options;
-use lrlex::lrlex_mod;
-use lrpar::{lrpar_mod, Lexeme, Lexer, NonStreamingLexer};
+use lrpar::{Lexeme, Lexer, NonStreamingLexer};
 use std::{env, fs::File, io::Read};
-
-lrlex_mod!("java.l");
-lrpar_mod!("java.y");
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -37,7 +33,7 @@ fn main() {
         return;
     }
 
-    let lexerdef = java_l::lexerdef();
+    let lexerdef = fletch_parser::lexerdef();
     for file in matches.free.iter() {
         println!("Parsing file: {}", file);
         let mut data = String::new();

@@ -99,15 +99,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "fletch-compiler"
+name = "fletch-javac65"
+version = "0.1.0"
+dependencies = [
+ "fletch-parser",
+ "getopts",
+ "lrpar",
+]
+
+[[package]]
+name = "fletch-parser"
 version = "0.1.0"
 dependencies = [
  "cfgrammar",
  "fletch-ast",
- "getopts",
  "lrlex",
  "lrpar",
- "regex",
 ]
 
 [[package]]

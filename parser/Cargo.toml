@@ -1,22 +1,16 @@
 [package]
-name = "fletch-compiler"
+name = "fletch-parser"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "6502-eater-woz-javac"
-path = "src/main.rs"
-
 [dependencies]
 cfgrammar = "0.13"
-fletch-ast = { path = "../ast" }
-getopts = "0.2"
 lrlex = "0.13"
 lrpar = "0.13"
-regex = "1"
+fletch-ast = { path = "../ast" }
 
 [build-dependencies]
 cfgrammar = "0.13"
 lrlex = "0.13"
 lrpar = "0.13"
-fletch-ast = { path = "../ast" }
+# fletch-ast = { path = "../ast" }
