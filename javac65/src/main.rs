@@ -55,7 +55,7 @@ fn main() {
     }
 
     let (files, args) = matches.free.split_at(1);
-    println!("Compilng file: {} with args to main: {:?}", files[0], args);
+    println!("Compiling file: {} with main({:?})", files[0], args);
 
     let mut data = String::new();
     File::open(files[0].clone())
