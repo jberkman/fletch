@@ -10,4 +10,3 @@ path = "src/main.rs"
 [dependencies]
 fletch-parser = { path = "../parser" }
 getopts = "0.2"
-lrpar = "0.13"
