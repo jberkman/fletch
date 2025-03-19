@@ -66,19 +66,20 @@ fn main() {
     let lexerdef = lexerdef();
     let lexer = lexerdef.lexer(&data);
     let (ast, errs) = parse(&lexer);
-    if errs.is_empty() {
-        if let Some(ast) = ast {
-            match ast {
-                Ok(ast) => println!("{:#?}", ast),
-                Err(_) => {
-                    eprintln!("Unknown parse error");
-                    exit(1);
-                }
-            }
-        }    
-    } else {
+    if !errs.is_empty() {
         for err in errs {
             eprintln!("{}", err.pp(&lexer, &token_epp))
         }
+        exit(1);
     }
+
+    if let Some(ast) = ast {
+        match ast {
+            Ok(ast) => println!("{:#?}", ast),
+            Err(_) => {
+                eprintln!("Unknown parse error");
+                exit(1);
+            }
+        }
+    }    
 }
