@@ -19,6 +19,7 @@ pub type VecNode<T> = Node<Vec<T>>;
 pub type Identifier = Span;
 
 pub type IdentifierNode = Node<Identifier>;
+pub type IdentifierList = VecNode<IdentifierNode>;
 
 #[derive(Clone, Debug)]
 pub enum Literal {
@@ -97,7 +98,7 @@ pub type TypeNode = Node<Type>;
 #[derive(Clone, Debug)]
 pub enum Name {
     Simple(IdentifierNode),
-    Qualified(Vec<IdentifierNode>),
+    Qualified(IdentifierList),
 }
 
 impl Name {
@@ -108,11 +109,12 @@ impl Name {
     pub fn new_qualified_node(span: Span, name: NameNode, identifier: IdentifierNode) -> NameNode {
         match name.data {
             Self::Simple(name) => {
-                NameNode::new(span, Self::Qualified(vec![name, identifier]))
+                let list = IdentifierList::new(span, vec![name, identifier]);
+                NameNode::new(span, Self::Qualified(list))
             }
             Self::Qualified(name_list) => {
                 let mut v = name_list;
-                v.push(identifier);
+                v.data.push(identifier);
                 NameNode::new(span, Self::Qualified(v))
             }
         }
