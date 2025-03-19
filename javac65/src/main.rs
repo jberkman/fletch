@@ -1,7 +1,7 @@
 use getopts::Options;
 use std::{env, fs::File, io::Read, process::exit};
 
-use fletch_parser::{lexerdef, parse};
+use fletch_parser::{lexerdef, parse, token_epp};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -64,6 +64,21 @@ fn main() {
         .expect("Failed to read file");
 
     let lexerdef = lexerdef();
-    let ast = parse(&lexerdef.lexer(&data));
-    println!("{:#?}", ast);
+    let lexer = lexerdef.lexer(&data);
+    let (ast, errs) = parse(&lexer);
+    if errs.is_empty() {
+        if let Some(ast) = ast {
+            match ast {
+                Ok(ast) => println!("{:#?}", ast),
+                Err(_) => {
+                    eprintln!("Unknown parse error");
+                    exit(1);
+                }
+            }
+        }    
+    } else {
+        for err in errs {
+            eprintln!("{}", err.pp(&lexer, &token_epp))
+        }
+    }
 }

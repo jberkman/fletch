@@ -25,7 +25,8 @@ Literal -> Result<LiteralNode, ()>:
 // Types, Values, and Vars
 
 Type -> Result<TypeNode, ()>:
-    'BOOLEAN' { Ok(Type::new_node($span, Type::Boolean)) }
+    Type 'LBRACKET' 'RBRACKET' { Ok(Type::new_node($span, Type::Array(Box::new($1?)))) }
+    | 'BOOLEAN' { Ok(Type::new_node($span, Type::Boolean)) }
     | 'BYTE' { Ok(Type::new_node($span, Type::Byte)) }
     | 'CHAR' { Ok(Type::new_node($span, Type::Char)) }
     | 'DOUBLE' { Ok(Type::new_node($span, Type::Double)) }
@@ -33,9 +34,15 @@ Type -> Result<TypeNode, ()>:
     | 'INT' { Ok(Type::new_node($span, Type::Int)) }
     | 'LONG' { Ok(Type::new_node($span, Type::Long)) }
     | 'SHORT' { Ok(Type::new_node($span, Type::Short)) }
+    | Name { Ok(Type::new_node($span, Type::Name($1?))) }
     ;
 
 // Names
+
+Name -> Result<NameNode, ()>:
+    Identifier { Ok(Name::new_simple_node($span, $1?)) }
+    | Name 'DOT' Identifier { Ok(Name::new_qualified_node($span, $1?, $3?)) }
+    ;
 
 // Packages
 

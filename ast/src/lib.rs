@@ -72,6 +72,7 @@ pub type LiteralNode = Node<Literal>;
 
 #[derive(Clone, Debug)]
 pub enum Type {
+    Array(Box<TypeNode>),
     Boolean,
     Byte,
     Char,
@@ -79,6 +80,7 @@ pub enum Type {
     Float,
     Int,
     Long,
+    Name(NameNode),
     Short,
 }
 
@@ -91,6 +93,33 @@ impl Type {
 pub type TypeNode = Node<Type>;
 
 // Names
+
+#[derive(Clone, Debug)]
+pub enum Name {
+    Simple(IdentifierNode),
+    Qualified(Vec<IdentifierNode>),
+}
+
+impl Name {
+    pub fn new_simple_node(span: Span, name: IdentifierNode) -> NameNode {
+        NameNode::new(span, Self::Simple(name))
+    }
+
+    pub fn new_qualified_node(span: Span, name: NameNode, identifier: IdentifierNode) -> NameNode {
+        match name.data {
+            Self::Simple(name) => {
+                NameNode::new(span, Self::Qualified(vec![name, identifier]))
+            }
+            Self::Qualified(name_list) => {
+                let mut v = name_list;
+                v.push(identifier);
+                NameNode::new(span, Self::Qualified(v))
+            }
+        }
+    }
+}
+
+pub type NameNode = Node<Name>;
 
 // Packages
 
