@@ -13,4 +13,3 @@ fletch-ast = { path = "../ast" }
 cfgrammar = "0.13"
 lrlex = "0.13"
 lrpar = "0.13"
-# fletch-ast = { path = "../ast" }

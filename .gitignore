@@ -1,2 +1,4 @@
 /target
 build_rs_cov.profraw
+vm/bin
+*~
