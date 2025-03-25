@@ -1,4 +1,6 @@
 /target
 build_rs_cov.profraw
-vm/bin
+*/bin
+*/doc
 *~
+.DS_Store

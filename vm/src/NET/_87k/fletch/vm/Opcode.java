@@ -1,8 +1,8 @@
 package NET._87k.fletch.vm;
 
-public interface OpCode {
-    void execute(Machine machine, byte[] args);
-
+interface Opcode {
+    void execute();
+/*
     byte AALOAD = (byte) 0x32;
     byte AASTORE = (byte) 0x53;
     byte ACONST_NULL = (byte) 0x1;
@@ -234,4 +234,5 @@ public interface OpCode {
     byte TABLESWITCH = (byte) 0xaa;
 
     byte WIDE = (byte) 0xc4;
+*/
 }

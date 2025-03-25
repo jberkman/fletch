@@ -1,0 +1,4 @@
+./src/java/lang/Class.java
+./src/java/lang/Cloneable.java
+./src/java/lang/Object.java
+./src/java/lang/String.java
