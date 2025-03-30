@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-interface Opcode {
+public interface Opcode {
     void execute();
 /*
     byte AALOAD = (byte) 0x32;

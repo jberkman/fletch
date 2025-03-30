@@ -1,108 +1,117 @@
 package NET._87k.fletch.vm;
 
-final class ClassFile {
-    final static int MAGIC = 0xcafebabe;
-    final static short MAJOR_VERSION = 45;
-    final static short MINOR_VERSION = 3;
+import java.io.IOException;
 
-    final static byte CONSTANT_CLASS = 7;
-    final static byte CONSTANT_FIELDREF = 9;
-    final static byte CONSTANT_METHODREF = 10;
-    final static byte CONSTANT_INTERFACE_METHODREF = 11;
-    final static byte CONSTANT_STRING = 8;
-    final static byte CONSTANT_INTEGER = 3;
-    final static byte CONSTANT_FLOAT = 4;
-    final static byte CONSTANT_LONG = 5;
-    final static byte CONSTANT_DOUBLE = 6;
-    final static byte CONSTANT_NAME_AND_TYPE = 12;
-    final static byte CONSTANT_UTF8 = 1;
+public final class ClassFile {
+    static final int MAGIC = 0xcafebabe;
+    static final short MAJOR_VERSION = 45;
+    static final short MINOR_VERSION = 3;
 
-    final static short ACC_PUBLIC = 0x1;
-    final static short ACC_PRIVATE = 0x2;
-    final static short ACC_PROTECTED = 0x4;
-    final static short ACC_STATIC = 0x8;
+    static final byte CONSTANT_CLASS = 7;
+    static final byte CONSTANT_FIELDREF = 9;
+    static final byte CONSTANT_METHODREF = 10;
+    static final byte CONSTANT_INTERFACE_METHODREF = 11;
+    static final byte CONSTANT_STRING = 8;
+    static final byte CONSTANT_INTEGER = 3;
+    static final byte CONSTANT_FLOAT = 4;
+    static final byte CONSTANT_LONG = 5;
+    static final byte CONSTANT_DOUBLE = 6;
+    static final byte CONSTANT_NAME_AND_TYPE = 12;
+    static final byte CONSTANT_UTF8 = 1;
 
-    final static short ACC_FINAL = 0x10;
-    final static short ACC_SUPER = 0x20;
-    final static short ACC_SYNCHRONIZED = 0x20;
-    final static short ACC_VOLATILE = 0x40;
-    final static short ACC_TRANSIENT = 0x80;
+    static final short ACC_PUBLIC = 0x1;
+    static final short ACC_PRIVATE = 0x2;
+    static final short ACC_PROTECTED = 0x4;
+    static final short ACC_STATIC = 0x8;
 
-    final static short ACC_NATIVE = 0x100;
-    final static short ACC_INTERFACE = 0x200;
-    final static short ACC_ABSTRACT = 0x400;
+    static final short ACC_FINAL = 0x10;
+    static final short ACC_SUPER = 0x20;
+    static final short ACC_SYNCHRONIZED = 0x20;
+    static final short ACC_VOLATILE = 0x40;
+    static final short ACC_TRANSIENT = 0x80;
 
-    byte[] bytes;
-    short[] constantPoolOffsets;
-    short accessFlagsOffset;
-    short[] interfaceOffsets;
-    short[] fieldOffsets;
-    short[][] fieldAttributeOffsets;
-    short[] methodOffsets;
-    short[][] methodAttributeOffsets;
-    short[] attributeOffsets;
+    static final short ACC_NATIVE = 0x100;
+    static final short ACC_INTERFACE = 0x200;
+    static final short ACC_ABSTRACT = 0x400;
 
-    ClassFile(byte[] bytes, int offset, int length) {
+    private byte[] bytes;
+    private int length;
+    private short[] constantPoolOffsets;
+    private short accessFlagsOffset;
+    private short[] interfaceOffsets;
+    private short[] fieldOffsets;
+    private short[][] fieldAttributeOffsets;
+    private short[] methodOffsets;
+    private short[][] methodAttributeOffsets;
+    private short[] attributeOffsets;
+    private boolean isValid;
+
+    public ClassFile(byte[] bytes, int offset, int length) throws IOException {
         this.bytes = bytes;
+        this.length = length;
+
         ClassFileReader reader = new ClassFileReader(bytes, offset, length);
+        try {
+            int magic = reader.readInt();
+            if (magic != MAGIC) {
+                throw new ClassFormatError(Integer.toHexString(magic));
+            }
 
-        int magic = reader.readU4();
-        if (magic != MAGIC) {
-            throw new ClassFormatError(Integer.toHexString(magic & 0xffff));
-        }
+            int minor = reader.readUnsignedShort();
+            int major = reader.readUnsignedShort();
+            if (major != MAJOR_VERSION) {
+                throw new ClassFormatError(Integer.toHexString(major));
+            }
+            if (minor != MINOR_VERSION) {
+                throw new ClassFormatError(Integer.toHexString(minor));
+            }
 
-        short minor = reader.readU2();
-        short major = reader.readU2();
-        if (major != MAJOR_VERSION) {
-            throw new ClassFormatError(Integer.toHexString(major & 0xffff));
-        }
-        if (minor != MINOR_VERSION) {
-            throw new ClassFormatError(Integer.toHexString(minor & 0xffff));
-        }
+            int constantPoolCount = reader.readUnsignedShort();
+            // constant_pool idx 0 is implied and reserved
+            if (constantPoolCount == 0) {
+                throw new ClassFormatError();
+            }
+            constantPoolOffsets = new short[constantPoolCount - 1];
+            for (int i = 0; i < constantPoolCount - 1; i++) {
+                constantPoolOffsets[i] = (short) reader.offset();
+                reader.readConstantPoolInfo();
+            }
 
-        int constantPoolCount = reader.readU2() & 0xffff;
-        // constant_pool idx 0 is implied and reserved
-        if (constantPoolCount == 0) {
-            throw new ClassFormatError();
-        }
-        constantPoolOffsets = new short[constantPoolCount - 1];
-        for (int i = 0; i < constantPoolCount - 1; i++) {
-            constantPoolOffsets[i] = (short) reader.offset;
-            reader.readConstantPoolInfo();
-        }
+            accessFlagsOffset = (short) reader.offset();
+            // access_flags, this_class, and super_class
+            reader.skip(6);
 
-        accessFlagsOffset = (short) reader.offset;
-        // access_flags, this_class, and super_class
-        reader.offset += 6;
+            int interfacesCount = reader.readUnsignedShort();
+            interfaceOffsets = new short[interfacesCount];
+            for (int i = 0; i < interfacesCount; i++) {
+                interfaceOffsets[i] = (short) reader.offset();
+                reader.skip(3); // tag, name_index
+            }
 
-        int interfacesCount = reader.readU2() & 0xffff;
-        interfaceOffsets = new short[interfacesCount];
-        for (int i = 0; i < interfacesCount; i++) {
-            interfaceOffsets[i] = (short) reader.offset;
-            reader.offset += 3; // tag, name_index
-        }
+            int fieldsCount = reader.readUnsignedShort();
+            fieldOffsets = new short[fieldsCount];
+            fieldAttributeOffsets = new short[fieldsCount][];
+            for (int i = 0; i < fieldsCount; i++) {
+                fieldOffsets[i] = (short) reader.offset();
+                fieldAttributeOffsets[i] = reader.readFieldOrMethodInfo();
+            }
 
-        int fieldsCount = reader.readU2() & 0xffff;
-        fieldOffsets = new short[fieldsCount];
-        fieldAttributeOffsets = new short[fieldsCount][];
-        for (int i = 0; i < fieldsCount; i++) {
-            fieldOffsets[i] = (short) reader.offset;
-            fieldAttributeOffsets[i] = reader.readFieldOrMethodInfo();
-        }
+            int methodsCount = reader.readUnsignedShort();
+            methodOffsets = new short[methodsCount];
+            methodAttributeOffsets = new short[methodsCount][];
+            for (int i = 0; i < methodsCount; i++) {
+                methodOffsets[i] = (short) reader.offset();
+                methodAttributeOffsets[i] = reader.readFieldOrMethodInfo();
+            }
 
-        int methodsCount = reader.readU2() & 0xffff;
-        methodOffsets = new short[methodsCount];
-        methodAttributeOffsets = new short[methodsCount][];
-        for (int i = 0; i < methodsCount; i++) {
-            methodOffsets[i] = (short) reader.offset;
-            methodAttributeOffsets[i] = reader.readFieldOrMethodInfo();
-        }
-
-        int attributesCount = reader.readU2() & 0xffff;
-        attributeOffsets = new short[attributesCount];
-        for (int i = 0; i < attributesCount; i++) {
-            attributeOffsets[i] = (short) reader.offset;
-            reader.readAttributeInfo();
+            int attributesCount = reader.readUnsignedShort();
+            attributeOffsets = new short[attributesCount];
+            for (int i = 0; i < attributesCount; i++) {
+                attributeOffsets[i] = (short) reader.offset();
+                reader.readAttributeInfo();
+            }
+        } finally {
+            reader.close();
         }
     }
 
@@ -110,106 +119,127 @@ final class ClassFile {
         return (short) (((bytes[offset] & 0xff) << 8) | bytes[offset + 1] & 0xff);
     }
 
-    private int getU4(int offset) {
-        return ((bytes[offset] & 0xff) << 24) |
-                ((bytes[offset + 1] & 0xff) << 16) |
-                ((bytes[offset + 2] & 0xff) << 8) |
-                (bytes[offset + 3] & 0xff);
-    }
-
-    private ClassFileReader getConstantPoolInfoReader(int index) {
+    private ClassFileReader createConstantPoolInfoReader(int index) {
         if (index == 0) {
             throw new ClassFormatError();
         } else if (index - 1 < constantPoolOffsets.length) {
-            return new ClassFileReader(bytes, constantPoolOffsets[index - 1], bytes.length);
+            return new ClassFileReader(bytes, constantPoolOffsets[index - 1], length);
         } else {
             throw new ClassFormatError(Integer.toString(index));
         }
     }
 
-    private void validateConstantPoolInfo(int index) {
-        ClassFileReader reader = getConstantPoolInfoReader(index);
-        byte tag = reader.readU1();
-        switch (tag) {
-            case CONSTANT_CLASS: {
-                short nameIndex = reader.readU2();
-                ClassFileReader nameReader = getConstantPoolInfoReader(nameIndex & 0xffff);
-                byte nameTag = nameReader.readU1();
-                if (nameTag != CONSTANT_UTF8) {
-                    throw new ClassFormatError(Integer.toString(nameTag & 0xff));
-                }
-                break;
-            }
-
-            case CONSTANT_INTERFACE_METHODREF:
-            case CONSTANT_FIELDREF:
-            case CONSTANT_METHODREF: {
-                short classIndex = reader.readU2();
-                ClassFileReader classReader = getConstantPoolInfoReader(classIndex & 0xffff);
-                byte classTag = classReader.readU1();
-                if (classTag != CONSTANT_CLASS) {
-                    throw new ClassFormatError(Integer.toString(classTag & 0xff));
-                }
-
-                short nameAndTypeIndex = reader.readU2();
-                ClassFileReader nameAndIndexReader = getConstantPoolInfoReader(nameAndTypeIndex & 0xffff);
-                byte nameAndIndexTag = nameAndIndexReader.readU1();
-                if (nameAndIndexTag != CONSTANT_NAME_AND_TYPE) {
-                    throw new ClassFormatError(Integer.toString(nameAndIndexTag & 0xff));
-                }
-                break;
-            }
-
-            case CONSTANT_STRING: {
-                short stringIndex = reader.readU2();
-                ClassFileReader stringReader = getConstantPoolInfoReader(stringIndex & 0xffff);
-                byte stringTag = stringReader.readU1();
-                if (stringTag != CONSTANT_UTF8) {
-                    throw new ClassFormatError(Integer.toString(stringTag & 0xff));
-                }
-                break;
-            }
-
-            case CONSTANT_INTEGER:
-            case CONSTANT_FLOAT:
-            case CONSTANT_LONG:
-            case CONSTANT_DOUBLE:
-                // No validation needed
-                break;
-
-            case CONSTANT_NAME_AND_TYPE: {
-                short nameIndex = reader.readU2();
-                ClassFileReader nameReader = getConstantPoolInfoReader(nameIndex & 0xffff);
-                byte nameTag = nameReader.readU1();
-                if (nameTag != CONSTANT_UTF8) {
-                    throw new ClassFormatError(Integer.toString(nameTag & 0xff));
-                }
-
-                short descriptorIndex = reader.readU2();
-                ClassFileReader descriptorReader = getConstantPoolInfoReader(descriptorIndex & 0xffff);
-                byte descriptorTag = descriptorReader.readU1();
-                if (descriptorTag != CONSTANT_UTF8) {
-                    throw new ClassFormatError(Integer.toString(descriptorTag & 0xff));
-                }
-                break;
-            }
-
-            case CONSTANT_UTF8: {
-                int length = reader.readU2() & 0xffff;
-                for (int i = 0; i < length; i++) {
-                    int b = reader.readU1() & 0xff;
-                    if (b == 0 || b >= 0xf0) {
-                        throw new ClassFormatError(Integer.toString(b & 0xff));
+    private void validateConstantPoolInfo(int index) throws IOException {
+        ClassFileReader reader = createConstantPoolInfoReader(index);
+        try {
+            int tag = reader.readUnsignedByte();
+            switch (tag) {
+                case CONSTANT_CLASS: {
+                    int nameIndex = reader.readUnsignedShort();
+                    ClassFileReader nameReader = createConstantPoolInfoReader(nameIndex);
+                    try {
+                        int nameTag = nameReader.readUnsignedByte();
+                        if (nameTag != CONSTANT_UTF8) {
+                            throw new ClassFormatError(Integer.toString(nameTag));
+                        }
+                    } finally {
+                        nameReader.close();
                     }
+                    break;
                 }
-                break;
+
+                case CONSTANT_INTERFACE_METHODREF:
+                case CONSTANT_FIELDREF:
+                case CONSTANT_METHODREF: {
+                    int classIndex = reader.readUnsignedShort();
+                    ClassFileReader classReader = createConstantPoolInfoReader(classIndex);
+                    try {
+                        int classTag = classReader.readUnsignedByte();
+                        if (classTag != CONSTANT_CLASS) {
+                            throw new ClassFormatError(Integer.toString(classTag));
+                        }
+                    } finally {
+                        classReader.close();
+                    }
+
+                    int nameAndTypeIndex = reader.readUnsignedShort();
+                    ClassFileReader nameAndIndexReader = createConstantPoolInfoReader(nameAndTypeIndex);
+                    try {
+                        int nameAndIndexTag = nameAndIndexReader.readUnsignedByte();
+                        if (nameAndIndexTag != CONSTANT_NAME_AND_TYPE) {
+                            throw new ClassFormatError(Integer.toString(nameAndIndexTag));
+                        }
+                    } finally {
+                        nameAndIndexReader.close();
+                    }
+                    break;
+                }
+
+                case CONSTANT_STRING: {
+                    int stringIndex = reader.readUnsignedShort();
+                    ClassFileReader stringReader = createConstantPoolInfoReader(stringIndex);
+                    try {
+                        int stringTag = stringReader.readUnsignedByte();
+                        if (stringTag != CONSTANT_UTF8) {
+                            throw new ClassFormatError(Integer.toString(stringTag));
+                        }
+                    } finally  {
+                        stringReader.close();
+                    }
+                    break;
+                }
+
+                case CONSTANT_INTEGER:
+                case CONSTANT_FLOAT:
+                case CONSTANT_LONG:
+                case CONSTANT_DOUBLE:
+                    // No validation needed
+                    break;
+
+                case CONSTANT_NAME_AND_TYPE: {
+                    int nameIndex = reader.readUnsignedShort();
+                    ClassFileReader nameReader = createConstantPoolInfoReader(nameIndex);
+                    try {
+                        int nameTag = nameReader.readUnsignedByte();
+                        if (nameTag != CONSTANT_UTF8) {
+                            throw new ClassFormatError(Integer.toString(nameTag));
+                        }
+                    } finally {
+                        nameReader.close();
+                    }
+
+                    int descriptorIndex = reader.readUnsignedShort();
+                    ClassFileReader descriptorReader = createConstantPoolInfoReader(descriptorIndex);
+                    try {
+                        int descriptorTag = descriptorReader.readUnsignedByte();
+                        if (descriptorTag != CONSTANT_UTF8) {
+                            throw new ClassFormatError(Integer.toString(descriptorTag));
+                        }
+                    } finally {
+                        descriptorReader.close();
+                    }
+                    break;
+                }
+
+                case CONSTANT_UTF8: {
+                    int length = reader.readUnsignedShort();
+                    for (int i = 0; i < length; i++) {
+                        int b = reader.readUnsignedByte();
+                        if (b == 0 || b >= 0xf0) {
+                            throw new ClassFormatError(Integer.toString(b));
+                        }
+                    }
+                    break;
+                }
+                default:
+                    throw new ClassFormatError(Integer.toString(tag));
             }
-            default:
-                throw new ClassFormatError(Integer.toString(tag));
+        } finally {
+            reader.close();
         }
     }
 
-    private static boolean areFileAccessFlagsValid(short accessFlags) {
+    private static boolean areFileAccessFlagsValid(int accessFlags) {
         accessFlags &= /* ACC_PUBLIC | */ ACC_FINAL | ACC_SUPER | ACC_INTERFACE | ACC_ABSTRACT;
         switch (accessFlags) {
             case ACC_FINAL | ACC_SUPER:
@@ -222,7 +252,7 @@ final class ClassFile {
         }
     }
 
-    private static boolean areFieldAccessFlagsValid(short accessFlags, boolean isInterface) {
+    private static boolean areFieldAccessFlagsValid(int accessFlags, boolean isInterface) {
         accessFlags &= ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_VOLATILE | ACC_TRANSIENT;
         if (isInterface) {
             return accessFlags == (ACC_PUBLIC | ACC_STATIC | ACC_FINAL);
@@ -239,7 +269,7 @@ final class ClassFile {
         return (accessFlags & (ACC_FINAL | ACC_VOLATILE)) != (ACC_FINAL | ACC_VOLATILE);
     }
 
-    private static boolean areMethodAccessFlagsValid(short accessFlags, boolean isInterface) {
+    private static boolean areMethodAccessFlagsValid(int accessFlags, boolean isInterface) {
         accessFlags &= ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_SYNCHRONIZED | ACC_NATIVE
                 | ACC_ABSTRACT;
         if (isInterface) {
@@ -258,57 +288,79 @@ final class ClassFile {
                 || (accessFlags & (ACC_PRIVATE | ACC_STATIC | ACC_FINAL | ACC_NATIVE | ACC_SYNCHRONIZED)) == 0;
     }
 
-    private void validateField(int index, boolean isInterface) {
+    private void validateField(int index, boolean isInterface) throws IOException {
         ClassFileReader reader = new ClassFileReader(bytes, fieldOffsets[index], bytes.length);
+        try {
+            int accessFlags = reader.readUnsignedShort();
+            if (!areFieldAccessFlagsValid(accessFlags, isInterface)) {
+                throw new ClassFormatError(Integer.toHexString(accessFlags));
+            }
 
-        short accessFlags = reader.readU2();
-        if (!areFieldAccessFlagsValid(accessFlags, isInterface)) {
-            throw new ClassFormatError(Integer.toHexString(accessFlags & 0xffff));
+            int nameIndex = reader.readUnsignedShort();
+            ClassFileReader nameReader = createConstantPoolInfoReader(nameIndex);
+            try {
+                int nameTag = nameReader.readUnsignedByte();
+                if (nameTag != CONSTANT_UTF8) {
+                    throw new ClassFormatError(Integer.toString(nameTag));
+                }
+            } finally {
+                nameReader.close();
+            }
+
+            int descriptorIndex = reader.readUnsignedShort();
+            ClassFileReader descriptorReader = createConstantPoolInfoReader(descriptorIndex);
+            try {
+                int descriptorTag = descriptorReader.readUnsignedByte();
+                if (descriptorTag != CONSTANT_UTF8) {
+                    throw new ClassFormatError(Integer.toString(descriptorTag));
+                }
+            } finally {
+                descriptorReader.close();
+            }
+
+            // just ignore attributes for now
+        } finally {
+            reader.close();
         }
-
-        short nameIndex = reader.readU2();
-        ClassFileReader nameReader = getConstantPoolInfoReader(nameIndex);
-        byte nameTag = nameReader.readU1();
-        if (nameTag != CONSTANT_UTF8) {
-            throw new ClassFormatError(Integer.toString(nameTag & 0xff));
-        }
-
-        short descriptorIndex = reader.readU2();
-        ClassFileReader descriptorReader = getConstantPoolInfoReader(descriptorIndex & 0xffff);
-        byte descriptorTag = descriptorReader.readU1();
-        if (descriptorTag != CONSTANT_UTF8) {
-            throw new ClassFormatError(Integer.toString(descriptorTag & 0xff));
-        }
-
-        // just ignore attributes for now
     }
 
-    private void validateMethod(int index, boolean isInterface) {
+    private void validateMethod(int index, boolean isInterface) throws IOException {
         ClassFileReader reader = new ClassFileReader(bytes, methodOffsets[index], bytes.length);
+        try {
+            int accessFlags = reader.readUnsignedShort();
+            if (!areMethodAccessFlagsValid(accessFlags, isInterface)) {
+                throw new ClassFormatError(Integer.toHexString(accessFlags));
+            }
 
-        short accessFlags = reader.readU2();
-        if (!areMethodAccessFlagsValid(accessFlags, isInterface)) {
-            throw new ClassFormatError(Integer.toHexString(accessFlags & 0xffff));
+            int nameIndex = reader.readUnsignedShort();
+            ClassFileReader nameReader = createConstantPoolInfoReader(nameIndex);
+            try {
+                int nameTag = nameReader.readUnsignedByte();
+                if (nameTag != CONSTANT_UTF8) {
+                    throw new ClassFormatError(Integer.toString(nameTag));
+                }
+            } finally {
+                nameReader.close();
+            }
+
+            int descriptorIndex = reader.readUnsignedShort();
+            ClassFileReader descriptorReader = createConstantPoolInfoReader(descriptorIndex);
+            try {
+                int descriptorTag = descriptorReader.readUnsignedByte();
+                if (descriptorTag != CONSTANT_UTF8) {
+                    throw new ClassFormatError(Integer.toString(descriptorTag));
+                }
+            } finally {
+                descriptorReader.close();
+            }
+
+            // just ignore attributes for now
+        } finally {
+            reader.close();
         }
-
-        short nameIndex = reader.readU2();
-        ClassFileReader nameReader = getConstantPoolInfoReader(nameIndex);
-        byte nameTag = nameReader.readU1();
-        if (nameTag != CONSTANT_UTF8) {
-            throw new ClassFormatError(Integer.toString(nameTag & 0xff));
-        }
-
-        short descriptorIndex = reader.readU2();
-        ClassFileReader descriptorReader = getConstantPoolInfoReader(descriptorIndex & 0xffff);
-        byte descriptorTag = descriptorReader.readU1();
-        if (descriptorTag != CONSTANT_UTF8) {
-            throw new ClassFormatError(Integer.toString(descriptorTag & 0xff));
-        }
-
-        // just ignore attributes for now
     }
 
-    void validate() {
+    public void validate() throws IOException {
         // Magic, major, and minor are validated in ClassFile()
 
         // Index 0 is implied
@@ -318,12 +370,13 @@ final class ClassFile {
 
         short accessFlags = getU2(accessFlagsOffset);
         if (!areFileAccessFlagsValid(accessFlags)) {
-            throw new ClassFormatError(Integer.toHexString(accessFlags & 0xffff));
+            throw new ClassFormatError(Integer.toHexString(accessFlags));
         }
 
         short thisClass = getU2(accessFlagsOffset + 2);
-        ClassFileReader thisReader = getConstantPoolInfoReader(thisClass & 0xffff);
-        byte thisTag = thisReader.readU1();
+        ClassFileReader thisReader = createConstantPoolInfoReader(thisClass);
+        int thisTag = thisReader.readUnsignedByte();
+        thisReader.close();
         if (thisTag != CONSTANT_CLASS) {
             throw new ClassFormatError(Integer.toString(thisTag * 0xff));
         }
@@ -332,21 +385,23 @@ final class ClassFile {
         short superClass = getU2(accessFlagsOffset + 4);
         // TODO: if superClass == 0, check that this is java.lang.Object
         if (superClass != 0) {
-            ClassFileReader superReader = getConstantPoolInfoReader(superClass & 0xffff);
-            byte superTag = superReader.readU1();
+            ClassFileReader superReader = createConstantPoolInfoReader(superClass);
+            int superTag = superReader.readUnsignedByte();
+            superReader.close();
             if (superTag != CONSTANT_CLASS) {
-                throw new ClassFormatError(Integer.toString(superTag & 0xff));
+                throw new ClassFormatError(Integer.toString(superTag));
             }
             // TODO: Verify that no superclasses are final
             // TODO: Verify that interface super is Object
         }
 
         for (int i = 0; i < interfaceOffsets.length; i++) {
-            short interfaceIndex = getU2(interfaceOffsets[i] & 0xffff);
-            ClassFileReader interfaceReader = getConstantPoolInfoReader(interfaceIndex);
-            byte interfaceTag = interfaceReader.readU1();
+            short interfaceIndex = getU2(interfaceOffsets[i]);
+            ClassFileReader interfaceReader = createConstantPoolInfoReader(interfaceIndex);
+            int interfaceTag = interfaceReader.readUnsignedByte();
+            interfaceReader.close();
             if (interfaceTag != CONSTANT_CLASS) {
-                throw new ClassFormatError(Integer.toString(interfaceTag & 0xff));
+                throw new ClassFormatError(Integer.toString(interfaceTag));
             }
             // TODO: Verify that type is an interface
         }
@@ -357,6 +412,62 @@ final class ClassFile {
 
         for (int i = 0; i < methodOffsets.length; i++) {
             validateMethod(i, (accessFlags & ACC_INTERFACE) != 0);
+        }
+
+        isValid = true;
+    }
+
+    public String thisClass() throws IOException {
+        int index = getU2(accessFlagsOffset + 2) & 0xffff;
+        ClassFileReader reader = createConstantPoolInfoReader(index);
+        try {
+            int tag = reader.readUnsignedByte();
+            if (tag != CONSTANT_CLASS) {
+                throw new IllegalStateException(Integer.toString(tag));
+            }
+            index = reader.readUnsignedShort();
+        } finally {
+            reader.close();
+        }
+
+        reader = createConstantPoolInfoReader(index);
+        try {
+            int tag = reader.readUnsignedByte();
+            if (tag != CONSTANT_UTF8) {
+                throw new IllegalStateException(Integer.toString(tag));
+            }
+            return reader.readUTF();
+        } finally {
+            reader.close();
+        }
+    }
+
+    public String superClass() throws IOException {
+        int index = getU2(accessFlagsOffset + 4);
+        if (index == 0) {
+            return null;
+        }
+
+        ClassFileReader reader = createConstantPoolInfoReader(index);
+        try {
+            int tag = reader.readUnsignedByte();
+            if (tag != CONSTANT_CLASS) {
+                throw new IllegalStateException(Integer.toString(tag));
+            }
+            index = reader.readUnsignedShort();
+        } finally {
+            reader.close();
+        }
+
+        reader = createConstantPoolInfoReader(index);
+        try {
+            int tag = reader.readUnsignedByte();
+            if (tag != CONSTANT_UTF8) {
+                throw new IllegalStateException(Integer.toString(tag));
+            }
+            return reader.readUTF();
+        } finally {
+            reader.close();
         }
     }
 }

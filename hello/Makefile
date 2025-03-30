@@ -9,16 +9,12 @@ JAVAC_FLAGS := -Xlint:-options -source 1.3 -target 1.1 -d $(BIN_DIR) $(SOURCEPAT
 JAVADOC_FLAGS := -source 1.3 -d $(DOC_DIR) $(CLASSPATH_FLAGS) $(SOURCEPATH_FLAGS)
 JAVA_FLAGS := $(CLASSPATH_FLAGS)
 
-# Ensure the VM output directory exists
 all:
 	mkdir -p $(BIN_DIR)
-	javac $(JAVAC_FLAGS) $(SRC_DIR)/NET/_87k/fletch/vm/jvm/Jvm.java
-
-run: all
-	java $(JAVA_FLAGS) NET._87k.fletch.vm.jvm.Jvm ../libjava/bin:../hello/bin Hello
+	javac $(JAVAC_FLAGS) $(SRC_DIR)/Hello.java
 
 doc:
-	javadoc $(JAVADOC_FLAGS) -private -subpackages NET._87k.fletch.vm
+	javadoc $(JAVADOC_FLAGS) -private -subpackages Hello
 
 clean:
 	rm -rf $(BIN_DIR) $(DOC_DIR)
