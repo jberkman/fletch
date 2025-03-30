@@ -34,16 +34,16 @@ public final class ClassFile {
     static final short ACC_INTERFACE = 0x200;
     static final short ACC_ABSTRACT = 0x400;
 
-    private byte[] bytes;
-    private int length;
-    private short[] constantPoolOffsets;
-    private short accessFlagsOffset;
-    private short[] interfaceOffsets;
-    private short[] fieldOffsets;
-    private short[][] fieldAttributeOffsets;
-    private short[] methodOffsets;
-    private short[][] methodAttributeOffsets;
-    private short[] attributeOffsets;
+    private final byte[] bytes;
+    private final int length;
+    private final short[] constantPoolOffsets;
+    private final short accessFlagsOffset;
+    private final short[] interfaceOffsets;
+    private final short[] fieldOffsets;
+    private final short[][] fieldAttributeOffsets;
+    private final short[] methodOffsets;
+    private final short[][] methodAttributeOffsets;
+    private final short[] attributeOffsets;
     private boolean isValid;
 
     public ClassFile(byte[] bytes, int offset, int length) throws IOException {

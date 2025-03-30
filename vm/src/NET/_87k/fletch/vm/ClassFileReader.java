@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 class ClassFileReader extends DataInputStream {
-    private PosInputStream pos;
+    private final PosInputStream pos;
 
     private ClassFileReader(PosInputStream pos) {
         super(pos);

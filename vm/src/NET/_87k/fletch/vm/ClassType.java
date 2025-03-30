@@ -1,8 +1,8 @@
 package NET._87k.fletch.vm;
 
-public class ClassType {
-    private ClassType superType;
-    private ClassFile file;
+class ClassType {
+    final ClassType superType;
+    private final ClassFile file;
     private ClassObjectRef reference;
 
     public ClassType(ClassType superType, ClassFile file) {
@@ -14,14 +14,13 @@ public class ClassType {
     }
 
     public void bind(ClassObjectRef reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
         if (this.reference != null) {
             throw new IllegalStateException();
         }
         this.reference = reference;
-    }
-
-    public ClassType superType() {
-        return superType;
     }
 
     public ClassObjectRef classReference() {

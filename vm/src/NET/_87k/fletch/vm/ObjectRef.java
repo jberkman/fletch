@@ -2,11 +2,11 @@ package NET._87k.fletch.vm;
 
 import java.util.Dictionary;
 
-public abstract class ObjectRef {
+abstract class ObjectRef {
     private static short nextId = 1;
     private static Dictionary instances;
 
-    private short id;
+    final short id;
 
     public ObjectRef() {
         id = nextId++;
@@ -15,9 +15,5 @@ public abstract class ObjectRef {
 
     public static ObjectRef getById(short id) {
         return (ObjectRef) instances.get(new Integer(id & 0xffff));
-    }
-
-    public final short id() {
-        return id;
     }
 }

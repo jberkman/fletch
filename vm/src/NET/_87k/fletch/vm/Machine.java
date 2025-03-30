@@ -22,7 +22,7 @@ public final class Machine {
      * @see Machine#push
      * @see Machine#pop
      */
-    private static short sp = 0;
+    private static short sp;
 
     /**
      * Program counter register. Contains address of current instruction
@@ -74,7 +74,7 @@ public final class Machine {
     }
 
     public static void push(ObjectRef obj) {
-        push(obj.id() & 0xffff);
+        push(obj.id & 0xffff);
     }
 
     /**
@@ -98,7 +98,7 @@ public final class Machine {
     }
 
     public static byte[] popByteArray() {
-        return ((ByteArrayRef) popRef()).bytes();
+        return ((ArrayRef) popRef()).bytes();
     }
 
     /**

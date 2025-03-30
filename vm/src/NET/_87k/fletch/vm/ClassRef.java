@@ -1,15 +1,12 @@
 package NET._87k.fletch.vm;
 
-public class ClassRef extends ObjectRef {
-    private ClassType classType;
-    Object[] fields;
+class ClassRef extends ObjectRef {
+    final ClassType classType;
+
+    private Object[] fields;
 
     ClassRef(ClassType classType) {
         this.classType = classType;
-    }
-
-    final ClassType classType() {
-        return classType;
     }
 
     Object getField(int index) {
