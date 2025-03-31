@@ -7,15 +7,15 @@ package NET._87k.fletch.vm;
 public interface AddressSpace {
     /**
      * Base address of the stack.
-     * 
+     *
      * @return stack base address in RAM (lower 32k).
-     * @see AddressSpace#stackLength
+     * @see AddressSpace#stackSize
      */
     public short stackBase();
 
     /**
      * Number of bytes allocated in stack.
-     * 
+     *
      * @return Length of stack in bytes.
      * @see AddressSpace#stackBase()
      */
@@ -23,19 +23,19 @@ public interface AddressSpace {
 
     /**
      * Return memory value at address addr.
-     * 
+     *
      * @param addr unsigned address to access
      * @return Value of memory stored at addr
-     * @see AddressSpace#st
+     * @see AddressSpace#store
      */
     public byte load(short addr);
 
     /**
      * Store value in memory at address addr.
-     * 
+     *
      * @param addr unsigned address to access
      * @param b    Value of memory to be stored
-     * @see AddressSpace#ld
+     * @see AddressSpace#load
      */
     public void store(short addr, byte b);
 
