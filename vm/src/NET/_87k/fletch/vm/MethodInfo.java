@@ -1,7 +1,12 @@
 package NET._87k.fletch.vm;
 
 final class MethodInfo extends MemberInfo {
-    MethodInfo(int accessFlags, String name, String descriptor, AttributeInfo[] attributes) {
-        super(accessFlags, name, descriptor, attributes);
+    final CodeAttribute code;
+    final String[] exceptions;
+
+    MethodInfo(int accessFlags, String name, String descriptor, CodeAttribute code, String[] exceptions) {
+        super(accessFlags, name, descriptor);
+        this.code = code;
+        this.exceptions = exceptions;
     }
 }

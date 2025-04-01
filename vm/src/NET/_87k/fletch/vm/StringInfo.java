@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-final class StringInfo implements ConstantPoolEntry {
+final class StringInfo implements ConstantPoolEntry, ConstantValueInfo {
 
     private final int stringIndex;
     String string;

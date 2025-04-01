@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-final class LongInfo implements ConstantPoolEntry {
+final class LongInfo implements ConstantPoolEntry, ConstantValueInfo {
 
     final long value;
 

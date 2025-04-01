@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-final class IntegerInfo implements ConstantPoolEntry {
+final class IntegerInfo implements ConstantPoolEntry, ConstantValueInfo {
 
     final int value;
 
