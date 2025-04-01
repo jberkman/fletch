@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import NET._87k.fletch.vm.ClassFile;
+import NET._87k.fletch.vm.Slice;
 import NET._87k.fletch.vm.ClassFileLoader;
 
 class ClassFileLoaderImpl implements ClassFileLoader {
@@ -16,7 +16,7 @@ class ClassFileLoaderImpl implements ClassFileLoader {
         this.classPath = classPath.split("\\:");
     }
 
-    public ClassFile loadClassFile(String name) throws ClassNotFoundException {
+    public Slice loadClassFile(String name) throws ClassNotFoundException {
         Throwable ex = null;
         byte[] buf = new byte[8192];
         for (int i = 0; i < classPath.length; i++) {
@@ -40,7 +40,7 @@ class ClassFileLoaderImpl implements ClassFileLoader {
                 }
                 byte[] bytes = buffer.toByteArray();
                 System.out.println("Loaded " + fileName);
-                return new ClassFile(bytes, 0, bytes.length);
+                return new Slice(bytes, 0, bytes.length);
             } catch (Throwable e) {
                 ex = e;
                 continue;

@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-class NativeClassLoader implements NativeMethod {
+final class NativeClassLoader implements NativeMethod {
 
     public void invoke(String methodName, String methodSignature) throws Throwable {
         if (methodName == "defineClass") {

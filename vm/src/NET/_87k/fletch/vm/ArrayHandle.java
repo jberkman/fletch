@@ -1,17 +1,16 @@
 package NET._87k.fletch.vm;
 
-class ArrayRef extends ObjectRef {
-    private final Object array;
+final class ArrayHandle extends ObjectHandle {
 
-    ArrayRef(boolean[] booleans) {
-        array = booleans;
+    ArrayHandle(boolean[] booleans) {
+        super(booleans);
     }
 
     boolean[] booleans() {
         return (boolean[]) booleans();
     }
 
-    ArrayRef(byte[] bytes) {
+    ArrayHandle(byte[] bytes) {
         array = bytes;
     }
 
@@ -19,7 +18,7 @@ class ArrayRef extends ObjectRef {
         return (byte[]) array;
     }
 
-    ArrayRef(char[] chars) {
+    ArrayHandle(char[] chars) {
         array = chars;
     }
 
@@ -27,7 +26,7 @@ class ArrayRef extends ObjectRef {
         return (char[]) array;
     }
 
-    ArrayRef(double[] doubles) {
+    ArrayHandle(double[] doubles) {
         array = doubles;
     }
 
@@ -35,7 +34,7 @@ class ArrayRef extends ObjectRef {
         return (double[]) array;
     }
 
-    ArrayRef(float[] floats) {
+    ArrayHandle(float[] floats) {
         array = floats;
     }
 
@@ -43,7 +42,7 @@ class ArrayRef extends ObjectRef {
         return (float[]) array;
     }
 
-    ArrayRef(int[] ints) {
+    ArrayHandle(int[] ints) {
         array = ints;
     }
 
@@ -51,7 +50,7 @@ class ArrayRef extends ObjectRef {
         return (int[]) array;
     }
 
-    ArrayRef(long[] longs) {
+    ArrayHandle(long[] longs) {
         array = longs;
     }
 
@@ -59,7 +58,7 @@ class ArrayRef extends ObjectRef {
         return (long[]) array;
     }
 
-    ArrayRef(Object[] objects) {
+    ArrayHandle(Object[] objects) {
         array = objects;
     }
 
@@ -67,7 +66,7 @@ class ArrayRef extends ObjectRef {
         return (Object[]) array;
     }
 
-    ArrayRef(short[] shorts) {
+    ArrayHandle(short[] shorts) {
         array = shorts;
     }
 

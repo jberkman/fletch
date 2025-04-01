@@ -1,6 +1,6 @@
 package NET._87k.fletch.vm;
 
-public class NativeObject implements NativeMethod {
+final class NativeObject implements NativeMethod {
 
     public void invoke(String methodName, String methodSignature) throws Throwable {
         if (methodName == "clone") {

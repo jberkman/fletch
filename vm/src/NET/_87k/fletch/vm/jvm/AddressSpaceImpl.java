@@ -1,7 +1,6 @@
 package NET._87k.fletch.vm.jvm;
 
 import NET._87k.fletch.vm.AddressSpace;
-import NET._87k.fletch.vm.Machine;
 
 /**
  * Virtual implementation of 6502 processor, used for VM development.

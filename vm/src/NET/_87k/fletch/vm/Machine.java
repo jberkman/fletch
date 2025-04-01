@@ -73,7 +73,7 @@ public final class Machine {
         push(s & 0xffff);
     }
 
-    public static void push(ObjectRef obj) {
+    public static void push(ObjectHandle obj) {
         push(obj.id & 0xffff);
     }
 
@@ -93,12 +93,16 @@ public final class Machine {
         return i;
     }
 
-    public static ObjectRef popRef() {
-        return ObjectRef.getById((short) pop());
+    public static ObjectHandle popRef() {
+        return ObjectHandle.getById((short) pop());
     }
 
-    public static byte[] popByteArray() {
-        return ((ArrayRef) popRef()).bytes();
+    //public static byte[] popByteArray() {
+    //    return ((ArrayHandle) popRef()).bytes();
+    //}
+
+    public static boolean popBoolean() {
+        return pop() != 0;
     }
 
     /**
@@ -115,29 +119,11 @@ public final class Machine {
         cpu.halt();
     }
 
-    private static ClassType bootstrapClass(String className, ClassFileLoader classFileLoader) throws ClassNotFoundException {
-        try {
-            ClassFile classFile = classFileLoader.loadClassFile(className);
-            classFile.validate();
-            String superClassName = classFile.superClass();
-            ClassType superClass = null;
-            if (superClassName != null) {
-                superClass = bootstrapClass(superClassName, classFileLoader);
-            }
-            return new ClassType(superClass, classFile);
-        } catch (IOException e) {
-            throw new ClassNotFoundException(e.toString());
-        }
-    }
-
     public static void main(AddressSpace cpu, ClassFileLoader classFileLoader, String[] args) {
         Machine.cpu = cpu;
 
-        ClassFile mainClass;
         try {
-            bootstrapClass("java/lang/Class", classFileLoader);
-            bootstrapClass("NET/_87k/fletch/libjava/SystemClassLoader", classFileLoader);
-            //mainClass = classFileLoader.loadClassFile(args[0].replace('.', '/'));
+            ClassObject.bootstrap(classFileLoader);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(1);

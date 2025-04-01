@@ -1,24 +1,22 @@
 package NET._87k.fletch.vm;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
-public final class NativeSystemClassLoader implements NativeMethod {
+final class NativeSystemClassLoader implements NativeMethod {
 
     public void invoke(String methodName, String methodSignature) throws Throwable {
         if (methodName == "loadClass") {
             if (methodSignature == "(Ljava/lang/String;Z)Ljava/lang/Class;") {
-                ClassRef
-                loadClass();
+                boolean resolve = Machine.popBoolean();
+                ClassRef className = (ClassRef) Machine.popRef();
+                ClassRef instance = (ClassRef) Machine.popRef();
+                ClassRef ret = loadClass(instance, className, resolve);
+                Machine.push(ret);
                 return;
             }
         }
         throw new NoSuchMethodError();
     }
 
-    protected void loadClass() throws ClassNotFoundException {
+    protected ClassRef loadClass(ClassRef instance, ClassRef className, boolean resolve) throws ClassNotFoundException {
+        return null;
     }
 }

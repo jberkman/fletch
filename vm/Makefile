@@ -12,10 +12,10 @@ JAVA_FLAGS := $(CLASSPATH_FLAGS)
 # Ensure the VM output directory exists
 all:
 	mkdir -p $(BIN_DIR)
-	javac $(JAVAC_FLAGS) $(SRC_DIR)/NET/_87k/fletch/vm/jvm/Jvm.java
+	javac $(JAVAC_FLAGS) $(SRC_DIR)/NET/_87k/fletch/vm/jvm/MachineImpl.java
 
 run: all
-	java $(JAVA_FLAGS) NET._87k.fletch.vm.jvm.Jvm ../libjava/bin:../hello/bin Hello
+	java $(JAVA_FLAGS) NET._87k.fletch.vm.jvm.MachineImpl ../libjava/bin:../hello/bin Hello
 
 doc:
 	javadoc $(JAVADOC_FLAGS) -private -subpackages NET._87k.fletch.vm
