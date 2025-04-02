@@ -7,6 +7,4 @@ final class Utf8Info implements ConstantPoolEntry {
         this.string = string;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-    }
 }

@@ -2,27 +2,31 @@ package NET._87k.fletch.vm;
 
 final class NameAndTypeInfo implements ConstantPoolEntry {
 
+    private final ConstantPool pool;
     private final int nameIndex;
     private final int descriptorIndex;
 
-    String name;
-    String descriptor;
+    private String name;
+    private String descriptor;
 
-    NameAndTypeInfo(int nameIndex, int descriptorIndex) {
+    NameAndTypeInfo(ConstantPool pool, int nameIndex, int descriptorIndex) {
+        this.pool = pool;
         this.nameIndex = nameIndex;
         this.descriptorIndex = descriptorIndex;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-        if (name == null) {
-            ConstantPoolEntry nameEntry = pool[nameIndex - 1];
-            ConstantPoolEntry descEntry = pool[descriptorIndex - 1];
-            if (!(nameEntry instanceof Utf8Info) || !(descEntry instanceof Utf8Info)) {
-                throw new ClassFormatError();
-            }
-            name = ((Utf8Info) nameEntry).string;
-            descriptor = ((Utf8Info) descEntry).string;
+    String name() {
+        if (name != null) {
+            return name;
         }
+        return name = pool.utf8String(nameIndex);
+    }
+
+    String descriptor() {
+        if (descriptor != null) {
+            return descriptor;
+        }
+        return descriptor = pool.utf8String(descriptorIndex);
     }
 
 }

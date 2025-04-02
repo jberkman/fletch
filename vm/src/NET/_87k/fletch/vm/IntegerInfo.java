@@ -8,7 +8,4 @@ final class IntegerInfo implements ConstantPoolEntry, ConstantValueInfo {
         this.value = value;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-    }
-
 }

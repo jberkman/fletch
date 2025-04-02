@@ -4,33 +4,38 @@ import java.util.jar.Attributes.Name;
 
 abstract class MemberrefInfo implements ConstantPoolEntry {
 
+    private final ConstantPool pool;
     private final int classIndex;
     private final int natIndex;
 
-    String className;
-    String name;
-    String descriptor;
+    private String className;
+    private NameAndTypeInfo nat;
 
-    MemberrefInfo(int classIndex, int nameAndTypeIndex) {
+    MemberrefInfo(ConstantPool pool, int classIndex, int nameAndTypeIndex) {
+        this.pool = pool;
         this.classIndex = classIndex;
         this.natIndex = nameAndTypeIndex;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-        if (className == null) {
-            ConstantPoolEntry classEntry = pool[classIndex - 1];
-            ConstantPoolEntry natEntry = pool[natIndex - 1];
-
-            if (!(classEntry instanceof ClassInfo) ||
-                    !(natEntry instanceof NameAndTypeInfo)) {
-                throw new ClassFormatError();
-            }
-            classEntry.resolve(pool);
-            natEntry.resolve(pool);
-
-            className = ((ClassInfo) classEntry).name;
-            name = ((NameAndTypeInfo) natEntry).name;
-            descriptor = ((NameAndTypeInfo) natEntry).descriptor;
+    String className() {
+        if (className != null) {
+            return className;
         }
+        return className = pool.utf8String(classIndex);
+    }
+
+    private NameAndTypeInfo nat() {
+        if (nat != null) {
+            return nat;
+        }
+        return nat = pool.nameAndType(natIndex);
+    }
+
+    String name() {
+        return nat().name();
+    }
+
+    String descriptor() {
+        return nat().descriptor();
     }
 }

@@ -8,7 +8,4 @@ final class LongInfo implements ConstantPoolEntry, ConstantValueInfo {
         value = ((long)highBytes << 32) | (long)lowBytes;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-    }
-
 }

@@ -37,19 +37,21 @@ final class ClassFileReader extends DataInputStream {
 
     private final PosInputStream pos;
     private final byte[] bytes;
+    private final int length;
 
-    private ClassFileReader(PosInputStream pos, byte[] bytes) {
+    private ClassFileReader(PosInputStream pos, byte[] bytes, int length) {
         super(pos);
         this.pos = pos;
         this.bytes = bytes;
+        this.length = length;
     }
 
     ClassFileReader(byte[] bytes, int offset, int length) {
-        this(new PosInputStream(bytes, offset, length), bytes);
+        this(new PosInputStream(bytes, offset, length), bytes, length);
     }
 
     ClassFileReader(Slice slice) {
-        this(new PosInputStream(slice.bytes, slice.offset, slice.length), slice.bytes);
+        this(new PosInputStream(slice.bytes, slice.offset, slice.length), slice.bytes, slice.length);
     }
 
     private void readHeader() throws IOException {
@@ -68,23 +70,23 @@ final class ClassFileReader extends DataInputStream {
         }
     }
 
-    private ConstantPoolEntry readConstantPoolEntry() throws IOException {
+    private ConstantPoolEntry readConstantPoolEntry(ConstantPool pool) throws IOException {
         int tag = readUnsignedByte();
         switch (tag) {
             case CONSTANT_CLASS:
-                return new ClassInfo(readUnsignedShort());
+                return new ClassInfo(pool, readUnsignedShort());
 
             case CONSTANT_FIELDREF:
-                return new FieldrefInfo(readUnsignedShort(), readUnsignedShort());
+                return new FieldrefInfo(pool, readUnsignedShort(), readUnsignedShort());
 
             case CONSTANT_METHODREF:
-                return new MethodrefInfo(readUnsignedShort(), readUnsignedShort());
+                return new MethodrefInfo(pool, readUnsignedShort(), readUnsignedShort());
 
             case CONSTANT_INTERFACE_METHODREF:
-                return new InterfaceMethodrefInfo(readUnsignedShort(), readUnsignedShort());
+                return new InterfaceMethodrefInfo(pool, readUnsignedShort(), readUnsignedShort());
 
             case CONSTANT_STRING:
-                return new StringInfo(readUnsignedShort());
+                return new StringInfo(pool, readUnsignedShort());
 
             case CONSTANT_INTEGER:
                 return new IntegerInfo(readInt());
@@ -99,7 +101,7 @@ final class ClassFileReader extends DataInputStream {
                 return new DoubleInfo(readInt(), readInt());
 
             case CONSTANT_NAME_AND_TYPE:
-                return new NameAndTypeInfo(readUnsignedShort(), readUnsignedShort());
+                return new NameAndTypeInfo(pool, readUnsignedShort(), readUnsignedShort());
 
             case CONSTANT_UTF8:
                 return new Utf8Info(readUTF());
@@ -109,15 +111,16 @@ final class ClassFileReader extends DataInputStream {
         }
     }
 
-    private ConstantPoolEntry[] readConstantpool() throws IOException {
+    private ConstantPool readConstantpool() throws IOException {
         int constantPoolCount = readUnsignedShort();
         // constant_pool idx 0 is implied and reserved
         if (constantPoolCount == 0) {
             throw new ClassFormatError();
         }
-        ConstantPoolEntry[] pool = new ConstantPoolEntry[constantPoolCount - 1];
+        ConstantPoolEntry[] entries = new ConstantPoolEntry[constantPoolCount - 1];
+        ConstantPool pool = new ConstantPool(entries);
         for (int i = 0; i < constantPoolCount - 1; i++) {
-            pool[i] = readConstantPoolEntry();
+            entries[i] = readConstantPoolEntry(pool);
         }
         return pool;
     }
@@ -136,39 +139,23 @@ final class ClassFileReader extends DataInputStream {
         }
     }
 
-    private String readThisClass(ConstantPoolEntry[] pool) throws IOException {
-        ConstantPoolEntry entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof ClassInfo)) {
-            throw new ClassFormatError();
-        }
-        entry.resolve(pool);
-        return ((ClassInfo) entry).name;
+    private String readThisClass(ConstantPool pool) throws IOException {
+        return pool.className(readUnsignedShort());
     }
 
-    private String readSuperClass(ConstantPoolEntry[] pool) throws IOException {
+    private String readSuperClass(ConstantPool pool) throws IOException {
         int index = readUnsignedShort();
         if (index == 0) {
             return null;
         }
-        ConstantPoolEntry entry = pool[index - 1];
-        if (!(entry instanceof ClassInfo)) {
-            throw new ClassFormatError();
-        }
-        entry.resolve(pool);
-        return ((ClassInfo) entry).name;
+        return pool.className(index);
     }
 
-    private String[] readInterfaces(ConstantPoolEntry[] pool) throws IOException {
+    private String[] readInterfaces(ConstantPool pool) throws IOException {
         int count = readUnsignedShort();
         String[] interfaces = new String[count];
         for (int i = 0; i < count; i++) {
-            int index = readUnsignedShort();
-            ConstantPoolEntry entry = pool[index - i];
-            if (!(entry instanceof ClassInfo)) {
-                throw new ClassFormatError();
-            }
-            entry.resolve(pool);
-            interfaces[i] = ((Utf8Info) entry).string;
+            interfaces[i] = pool.className(readUnsignedShort());
         }
         return interfaces;
     }
@@ -204,32 +191,14 @@ final class ClassFileReader extends DataInputStream {
         return slice;
     }
 
-    private String readAttributeName(ConstantPoolEntry[] pool) throws IOException {
-        ConstantPoolEntry entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
-        }
-        return ((Utf8Info) entry).string;
-    }
-
-    private FieldInfo readField(ConstantPoolEntry[] pool, boolean isInterface) throws IOException {
+    private FieldInfo readField(ConstantPool pool, boolean isInterface) throws IOException {
         int accessFlags = readFieldAccessFlags(isInterface);
-
-        ConstantPoolEntry entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
-        }
-        String name = ((Utf8Info) entry).string;
-
-        entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
-        }
-        String descriptor = ((Utf8Info) entry).string;
+        String name = pool.utf8String(readUnsignedShort());
+        String descriptor = pool.utf8String(readUnsignedShort());
         ConstantValueInfo value = null;
         int count = readInt();
         for (int i = 0; i < count; i++) {
-            String attributeName = readAttributeName(pool);
+            String attributeName = pool.utf8String(readUnsignedShort());
             int length = readInt();
             if (!"ConstantValue".equals(attributeName)) {
                 skipBytes(length);
@@ -238,20 +207,16 @@ final class ClassFileReader extends DataInputStream {
             if (length != 2) {
                 throw new ClassFormatError();
             }
-            entry = pool[readUnsignedShort() - 1];
-            if (!(entry instanceof ConstantValueInfo)) {
-                throw new ClassFormatError();
-            }
             // TODO(jcb): check against descriptor
             if (value != null) {
                 throw new ClassFormatError();
             }
-            value = (ConstantValueInfo) entry;
+            value = pool.constantValue(readUnsignedShort());
         }
         return new FieldInfo(accessFlags, name, descriptor, value);
     }
 
-    private FieldInfo[] readFields(ConstantPoolEntry[] pool, boolean isInterface) throws IOException {
+    private FieldInfo[] readFields(ConstantPool pool, boolean isInterface) throws IOException {
         int count = readUnsignedShort();
         FieldInfo[] fields = new FieldInfo[count];
         for (int i = 0; i < count; i++) {
@@ -309,7 +274,7 @@ final class ClassFileReader extends DataInputStream {
         return new CodeAttribute(maxStack, maxLocals, code, exceptions);
     }
 
-    private String[] readExceptions(ConstantPoolEntry[] pool) throws IOException {
+    private String[] readExceptions(ConstantPool pool) throws IOException {
         int count = readUnsignedShort();
         String[] exceptions = new String[count];
         for (int i = 0; i < count; i++) {
@@ -317,35 +282,20 @@ final class ClassFileReader extends DataInputStream {
             if (index == 0) {
                 continue;
             }
-            ConstantPoolEntry entry = pool[index - 1];
-            if (!(entry instanceof ClassInfo)) {
-                throw new ClassFormatError();
-            }
-            entry.resolve(pool);
-            exceptions[i] = ((ClassInfo) entry).name;
+            exceptions[i] = pool.className(index);
         }
         return exceptions;
     }
 
-    private MethodInfo readMethod(ConstantPoolEntry[] pool, boolean isInterface) throws IOException {
+    private MethodInfo readMethod(ConstantPool pool, boolean isInterface) throws IOException {
         int accessFlags = readMethodAccessFlags(isInterface);
-
-        ConstantPoolEntry entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
-        }
-        String name = ((Utf8Info) entry).string;
-
-        entry = pool[readUnsignedShort() - 1];
-        if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
-        }
-        String descriptor = ((Utf8Info) entry).string;
+        String name = pool.utf8String(readUnsignedShort());
+        String descriptor = pool.utf8String(readUnsignedShort());
         CodeAttribute code = null;
         String[] exceptions = null;
         int count = readUnsignedShort();
         for (int i = 0; i < count; i++) {
-            String attributeName = readAttributeName(pool);
+            String attributeName = pool.utf8String(readUnsignedShort());
             int length = readInt();
             if ("Code".equals(attributeName)) {
                 if (code != null) {
@@ -364,7 +314,7 @@ final class ClassFileReader extends DataInputStream {
         return new MethodInfo(accessFlags, name, descriptor, code, exceptions);
     }
 
-    private MethodInfo[] readMethods(ConstantPoolEntry[] pool, boolean isInterface) throws IOException {
+    private MethodInfo[] readMethods(ConstantPool pool, boolean isInterface) throws IOException {
         int count = readUnsignedShort();
         MethodInfo[] methods = new MethodInfo[count];
         for (int i = 0; i < count; i++) {
@@ -375,7 +325,7 @@ final class ClassFileReader extends DataInputStream {
 
     ClassDefinition readClassFile() throws IOException {
         readHeader();
-        ConstantPoolEntry[] pool = readConstantpool();
+        ConstantPool pool = readConstantpool();
         int accessFlags = readAccessFlags();
         boolean isInterface = (accessFlags & ACC_INTERFACE) != 0;
         String thisClass = readThisClass(pool);
@@ -383,7 +333,18 @@ final class ClassFileReader extends DataInputStream {
         String[] interfaces = readInterfaces(pool);
         FieldInfo[] fields = readFields(pool, isInterface);
         MethodInfo[] methods = readMethods(pool, isInterface);
-        // Ignore attributes
+
+        // Skip attributes
+        int count = readUnsignedShort();
+        for (int i = 0; i < count; i++) {
+            skipBytes(2); // name
+            int len = readInt();
+            skipBytes(len);
+        }
+
+        if (pos.pos() != this.length) {
+            throw new ClassFormatError();
+        }
 
         return new ClassDefinition(accessFlags, thisClass, superClass, interfaces, fields, methods);
     }

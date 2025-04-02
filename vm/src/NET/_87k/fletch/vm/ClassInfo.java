@@ -2,21 +2,21 @@ package NET._87k.fletch.vm;
 
 final class ClassInfo implements ConstantPoolEntry {
 
+    private final ConstantPool pool;
     private final int nameIndex;
-    /* final */ String name;
+    private String name;
 
-    ClassInfo(int nameIndex) {
+    ClassInfo(ConstantPool pool, int nameIndex) {
+        this.pool = pool;
         this.nameIndex = nameIndex;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-        if (name == null) {
-            ConstantPoolEntry entry = pool[nameIndex - 1];
-            if (!(entry instanceof Utf8Info)) {
-                throw new ClassFormatError();
-            }
-            name = ((Utf8Info) entry).string;
+    String name() {
+        if (name != null) {
+            return name;
         }
+        // TODO(jcb): validate name is a valid class name
+        return name = pool.utf8String(nameIndex);
     }
 
 }

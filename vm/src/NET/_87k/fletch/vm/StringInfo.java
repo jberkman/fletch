@@ -2,21 +2,20 @@ package NET._87k.fletch.vm;
 
 final class StringInfo implements ConstantPoolEntry, ConstantValueInfo {
 
+    private final ConstantPool pool;
     private final int stringIndex;
-    String string;
+    private String string;
 
-    StringInfo(int stringIndex) {
+    StringInfo(ConstantPool pool, int stringIndex) {
+        this.pool = pool;
         this.stringIndex = stringIndex;
     }
 
-    public void resolve(ConstantPoolEntry[] pool) {
-        if (string == null) {
-            ConstantPoolEntry entry = pool[stringIndex - 1];
-            if (!(entry instanceof Utf8Info)) {
-                throw new ClassFormatError();
-            }
-            string = ((Utf8Info) entry).string;
+    String value() {
+        if (string != null) {
+            return string;
         }
+        return string = pool.utf8String(stringIndex);
     }
 
 }

@@ -6,7 +6,4 @@ final class DoubleInfo implements ConstantPoolEntry, ConstantValueInfo {
     DoubleInfo(int highBytes, int lowBytes) {
         throw new RuntimeException();
     }
-
-    public void resolve(ConstantPoolEntry[] pool) {
-    }
 }
