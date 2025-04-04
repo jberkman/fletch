@@ -10,4 +10,10 @@ abstract class MemberInfo {
         this.name = name;
         this.descriptor = descriptor;
     }
+
+    boolean isStatic() {
+        return (accessFlags & AccessFlags.ACC_STATIC) != 0;
+    }
+
+
 }

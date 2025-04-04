@@ -1,19 +1,14 @@
 package java.lang;
 
 public abstract class ClassLoader {
-    protected ClassLoader() {}
+    protected ClassLoader() throws SecurityException {
+    }
 
     protected abstract Class loadClass(String className, boolean resolve) throws ClassNotFoundException;
 
-    protected final Class defineClass(byte[] bytecode, int offset, int length) {
-        // This cannot load java.*
-        return null;
-    }
-    
-    protected final Class findSystemClass(String className) throws ClassNotFoundException {
-        return null;
-    }
-    
-    protected final void resolveClass(Class c) {
-    }
+    protected native final Class defineClass(byte[] bytecode, int offset, int length);
+
+    protected native final Class findSystemClass(String className) throws ClassNotFoundException;
+
+    protected native final void resolveClass(Class c);
 }

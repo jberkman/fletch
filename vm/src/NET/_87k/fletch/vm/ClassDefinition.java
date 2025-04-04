@@ -6,11 +6,12 @@ final class ClassDefinition {
     final String thisClass;
     final String superClass;
     final String[] interfaces;
-    final FieldInfo[] fields;
-    final MethodInfo[] methods;
+    final FieldInfo[] instanceFields;
+    final FieldInfo[] staticFields;
+    final MethodInfo[] instanceMethods;
+    final MethodInfo[] staticMethods;
 
-    ClassDefinition(int accessFlags, String thisClass, String superClass, String[] interfaces, FieldInfo[] fields,
-            MethodInfo[] methods) throws ClassFormatError {
+    ClassDefinition(int accessFlags, String thisClass, String superClass, String[] interfaces, FieldInfo[] instanceFields, FieldInfo[] staticFields, MethodInfo[] instanceMethods, MethodInfo[] staticMethods) throws ClassFormatError {
         boolean thisIsObject = "java/lang/Object".equals(thisClass);
         boolean superIsNull = superClass == null;
 
@@ -29,8 +30,10 @@ final class ClassDefinition {
         for (int i = 0; i < interfaces.length; i++) {
             this.interfaces[i] = interfaces[i].intern();
         }
-        this.fields = fields;
-        this.methods = methods;
+        this.instanceFields = instanceFields;
+        this.staticFields = staticFields;
+        this.instanceMethods = instanceMethods;
+        this.staticMethods = staticMethods;
     }
 
 }

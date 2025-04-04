@@ -2,10 +2,14 @@ package NET._87k.fletch.vm;
 
 final class IntegerInfo implements ConstantPoolEntry, ConstantValueInfo {
 
-    final int value;
+    private final Integer value;
 
     IntegerInfo(int value) {
-        this.value = value;
+        this.value = new Integer(value);
+    }
+
+    public Object value() {
+        return value;
     }
 
 }

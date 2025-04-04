@@ -5,6 +5,7 @@ final class ClassInfo implements ConstantPoolEntry {
     private final ConstantPool pool;
     private final int nameIndex;
     private String name;
+    private ClassObjectHandle handle;
 
     ClassInfo(ConstantPool pool, int nameIndex) {
         this.pool = pool;
@@ -17,6 +18,13 @@ final class ClassInfo implements ConstantPoolEntry {
         }
         // TODO(jcb): validate name is a valid class name
         return name = pool.utf8String(nameIndex);
+    }
+
+    ClassObjectHandle handle() {
+        if (handle != null) {
+            return handle;
+        }
+        throw new RuntimeException();
     }
 
 }

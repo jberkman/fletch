@@ -1,3 +1,4 @@
-class Hello {
-    public static void main(String[] args) {}
+class Empty {
+    public static void main(String[] args) {
+    }
 }

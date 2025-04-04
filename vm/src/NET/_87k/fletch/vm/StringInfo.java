@@ -11,11 +11,15 @@ final class StringInfo implements ConstantPoolEntry, ConstantValueInfo {
         this.stringIndex = stringIndex;
     }
 
-    String value() {
+    String string() {
         if (string != null) {
             return string;
         }
         return string = pool.utf8String(stringIndex);
+    }
+
+    public Object value() {
+        return string();
     }
 
 }

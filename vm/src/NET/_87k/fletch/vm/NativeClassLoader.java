@@ -1,18 +1,25 @@
 package NET._87k.fletch.vm;
 
+import java.io.IOException;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 final class NativeClassLoader implements NativeMethod {
 
+    private static Dictionary classHandles = new Hashtable();
+
     public void invoke(String methodName, String methodSignature) throws Throwable {
+        /*
         if (methodName == "defineClass") {
             if (methodSignature == "([BII)Ljava/lang/Class;") {
                 int len = Machine.pop();
                 int off = Machine.pop();
                 short id = (short) Machine.pop();
-                byte[] bytes = ((ByteArrayRef) ObjectRef.getById(id)).bytes();
+                byte[] bytes = ((ByteArrayRef) ObjectHandle.getById(id)).bytes();
                 id = (short) Machine.pop();
-                ClassRef self = (ClassRef) ObjectRef.getById(id);
+                ClassObjectHandle self = (ClassObjectHandle) ObjectHandle.getById(id);
 
-                ClassObjectRef ret = defineClass(self, bytes, off, len);
+                ClassObjectHandle ret = defineClass(self, bytes, off, len);
 
                 Machine.push(ret.id() & 0xffff);
                 return;
@@ -28,10 +35,20 @@ final class NativeClassLoader implements NativeMethod {
                 return;
             }
         }
+        */
         throw new NoSuchMethodError();
     }
 
-    static ClassObjectRef defineClass(ClassRef classLoader, byte[] bytes, int offset, int len) {
+    static void adopt(ClassObjectHandle classObjectHandle) {
+        String className = classObjectHandle.classObject.definition.thisClass;
+        if (classHandles.get(className) != null) {
+            return;
+        }
+        classHandles.put(className, classObjectHandle);
+
+    }
+
+    static ClassObjectHandle defineClass(ClassObjectHandle classLoader, byte[] bytes, int offset, int len) {
         throw new RuntimeException();
     }
 

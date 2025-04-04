@@ -2,12 +2,14 @@ package NET._87k.fletch.vm;
 
 final class ArrayHandle extends ObjectHandle {
 
+    private final Object array;
+
     ArrayHandle(boolean[] booleans) {
-        super(booleans);
+        array = booleans;
     }
 
     boolean[] booleans() {
-        return (boolean[]) booleans();
+        return (boolean[]) array;
     }
 
     ArrayHandle(byte[] bytes) {

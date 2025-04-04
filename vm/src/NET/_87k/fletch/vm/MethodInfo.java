@@ -9,4 +9,5 @@ final class MethodInfo extends MemberInfo {
         this.code = code;
         this.exceptions = exceptions;
     }
+
 }

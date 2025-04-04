@@ -2,6 +2,8 @@ package NET._87k.fletch.vm;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Vector;
 
 final class ClassFileReader extends DataInputStream {
     static final int MAGIC = 0xcafebabe;
@@ -20,21 +22,6 @@ final class ClassFileReader extends DataInputStream {
     static final byte CONSTANT_NAME_AND_TYPE = 12;
     static final byte CONSTANT_UTF8 = 1;
 
-    static final short ACC_PUBLIC = 0x1;
-    static final short ACC_PRIVATE = 0x2;
-    static final short ACC_PROTECTED = 0x4;
-    static final short ACC_STATIC = 0x8;
-
-    static final short ACC_FINAL = 0x10;
-    static final short ACC_SUPER = 0x20;
-    static final short ACC_SYNCHRONIZED = 0x20;
-    static final short ACC_VOLATILE = 0x40;
-    static final short ACC_TRANSIENT = 0x80;
-
-    static final short ACC_NATIVE = 0x100;
-    static final short ACC_INTERFACE = 0x200;
-    static final short ACC_ABSTRACT = 0x400;
-
     private final PosInputStream pos;
     private final byte[] bytes;
     private final int length;
@@ -51,7 +38,7 @@ final class ClassFileReader extends DataInputStream {
     }
 
     ClassFileReader(Slice slice) {
-        this(new PosInputStream(slice.bytes, slice.offset, slice.length), slice.bytes, slice.length);
+        this(slice.bytes, slice.offset, slice.length);
     }
 
     private void readHeader() throws IOException {
@@ -125,20 +112,6 @@ final class ClassFileReader extends DataInputStream {
         return pool;
     }
 
-    private int readAccessFlags() throws IOException {
-        int accessFlags = readUnsignedShort();
-        accessFlags &= ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_INTERFACE | ACC_ABSTRACT;
-        switch (accessFlags & ~ACC_PUBLIC) {
-            case ACC_FINAL | ACC_SUPER:
-            case ACC_INTERFACE | ACC_ABSTRACT:
-            case ACC_SUPER | ACC_ABSTRACT:
-            case ACC_SUPER:
-                return accessFlags;
-            default:
-                throw new ClassFormatError();
-        }
-    }
-
     private String readThisClass(ConstantPool pool) throws IOException {
         return pool.className(readUnsignedShort());
     }
@@ -160,31 +133,6 @@ final class ClassFileReader extends DataInputStream {
         return interfaces;
     }
 
-    private int readFieldAccessFlags(boolean isInterface) throws IOException {
-        int accessFlags = readUnsignedShort();
-        accessFlags &= ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_VOLATILE | ACC_TRANSIENT;
-        if (isInterface) {
-            if (accessFlags == (ACC_PUBLIC | ACC_STATIC | ACC_FINAL)) {
-                throw new ClassFormatError();
-            }
-            return accessFlags;
-        }
-        switch (accessFlags & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)) {
-            case 0:
-            case ACC_PUBLIC:
-            case ACC_PRIVATE:
-            case ACC_PROTECTED:
-                break;
-
-            default:
-                throw new ClassFormatError();
-        }
-        if ((accessFlags & (ACC_FINAL | ACC_VOLATILE)) == (ACC_FINAL | ACC_VOLATILE)) {
-            throw new ClassFormatError();
-        }
-        return accessFlags;
-    }
-
     private Slice readSlice(int length) throws IOException {
         Slice slice = new Slice(bytes, pos.pos(), length);
         skipBytes(length);
@@ -192,7 +140,10 @@ final class ClassFileReader extends DataInputStream {
     }
 
     private FieldInfo readField(ConstantPool pool, boolean isInterface) throws IOException {
-        int accessFlags = readFieldAccessFlags(isInterface);
+        int accessFlags = readUnsignedShort();
+        if (!AccessFlags.areValidForField(accessFlags, isInterface)) {
+            throw new ClassFormatError();
+        }
         String name = pool.utf8String(readUnsignedShort());
         String descriptor = pool.utf8String(readUnsignedShort());
         ConstantValueInfo value = null;
@@ -216,39 +167,19 @@ final class ClassFileReader extends DataInputStream {
         return new FieldInfo(accessFlags, name, descriptor, value);
     }
 
-    private FieldInfo[] readFields(ConstantPool pool, boolean isInterface) throws IOException {
+    private void readFields(ConstantPool pool, boolean isInterface, Vector instanceFields, Vector staticFields)
+            throws IOException {
         int count = readUnsignedShort();
-        FieldInfo[] fields = new FieldInfo[count];
+        instanceFields.ensureCapacity(count);
+        staticFields.ensureCapacity(count);
         for (int i = 0; i < count; i++) {
-            fields[i] = readField(pool, isInterface);
-        }
-        return fields;
-    }
-
-    private int readMethodAccessFlags(boolean isInterface) throws IOException {
-        int accessFlags = readUnsignedShort();
-        accessFlags &= ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_SYNCHRONIZED | ACC_NATIVE
-                | ACC_ABSTRACT;
-        if (isInterface) {
-            if (accessFlags != (ACC_PUBLIC | ACC_ABSTRACT)) {
-                throw new ClassFormatError();
+            FieldInfo fieldInfo = readField(pool, isInterface);
+            if (fieldInfo.isStatic()) {
+                staticFields.addElement(fieldInfo);
+            } else {
+                instanceFields.addElement(fieldInfo);
             }
-            return accessFlags;
         }
-        switch (accessFlags & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)) {
-            case 0:
-            case ACC_PUBLIC:
-            case ACC_PRIVATE:
-            case ACC_PROTECTED:
-                break;
-            default:
-                throw new ClassFormatError(Integer.toHexString(accessFlags));
-        }
-        if ((accessFlags & ACC_ABSTRACT) != 0
-                && (accessFlags & (ACC_PRIVATE | ACC_STATIC | ACC_FINAL | ACC_NATIVE | ACC_SYNCHRONIZED)) != 0) {
-            throw new ClassFormatError(Integer.toHexString(accessFlags));
-        }
-        return accessFlags;
     }
 
     private CodeAttribute readCodeAttribute() throws IOException {
@@ -288,7 +219,10 @@ final class ClassFileReader extends DataInputStream {
     }
 
     private MethodInfo readMethod(ConstantPool pool, boolean isInterface) throws IOException {
-        int accessFlags = readMethodAccessFlags(isInterface);
+        int accessFlags = readUnsignedShort();
+        if (!AccessFlags.areValidForMethod(accessFlags, isInterface)) {
+            throw new ClassFormatError();
+        }
         String name = pool.utf8String(readUnsignedShort());
         String descriptor = pool.utf8String(readUnsignedShort());
         CodeAttribute code = null;
@@ -314,38 +248,67 @@ final class ClassFileReader extends DataInputStream {
         return new MethodInfo(accessFlags, name, descriptor, code, exceptions);
     }
 
-    private MethodInfo[] readMethods(ConstantPool pool, boolean isInterface) throws IOException {
+    private void readMethods(ConstantPool pool, boolean isInterface, Vector instanceMethods, Vector staticMethods)
+            throws IOException {
         int count = readUnsignedShort();
-        MethodInfo[] methods = new MethodInfo[count];
+        instanceMethods.ensureCapacity(count);
+        staticMethods.ensureCapacity(count);
         for (int i = 0; i < count; i++) {
-            methods[i] = readMethod(pool, isInterface);
+            MethodInfo method = readMethod(pool, isInterface);
+            if (method.isStatic()) {
+                staticMethods.addElement(method);
+            } else {
+                instanceMethods.addElement(method);
+            }
         }
-        return methods;
+    }
+
+    private FieldInfo[] fieldVecToArray(Vector v) {
+        FieldInfo[] a = new FieldInfo[v.size()];
+        v.copyInto(a);
+        return a;
+    }
+
+    private MethodInfo[] methodVecToArray(Vector v) {
+        MethodInfo[] a = new MethodInfo[v.size()];
+        v.copyInto(a);
+        return a;
     }
 
     ClassDefinition readClassFile() throws IOException {
         readHeader();
         ConstantPool pool = readConstantpool();
-        int accessFlags = readAccessFlags();
-        boolean isInterface = (accessFlags & ACC_INTERFACE) != 0;
+
+        int accessFlags = readUnsignedShort();
+        if (!AccessFlags.areValidForClass(accessFlags)) {
+            throw new ClassFormatError();
+        }
+        boolean isInterface = (accessFlags & AccessFlags.ACC_INTERFACE) != 0;
+
         String thisClass = readThisClass(pool);
         String superClass = readSuperClass(pool);
         String[] interfaces = readInterfaces(pool);
-        FieldInfo[] fields = readFields(pool, isInterface);
-        MethodInfo[] methods = readMethods(pool, isInterface);
+
+        Vector instanceFields = new Vector();
+        Vector staticFields = new Vector();
+        readFields(pool, isInterface, instanceFields, staticFields);
+
+        Vector instanceMethods = new Vector();
+        Vector staticMethods = new Vector();
+        readMethods(pool, isInterface, instanceMethods, staticMethods);
 
         // Skip attributes
         int count = readUnsignedShort();
         for (int i = 0; i < count; i++) {
             skipBytes(2); // name
-            int len = readInt();
-            skipBytes(len);
+            skipBytes(readInt());
         }
 
         if (pos.pos() != this.length) {
             throw new ClassFormatError();
         }
 
-        return new ClassDefinition(accessFlags, thisClass, superClass, interfaces, fields, methods);
+        return new ClassDefinition(accessFlags, thisClass, superClass, interfaces, fieldVecToArray(instanceFields),
+                fieldVecToArray(staticFields), methodVecToArray(instanceMethods), methodVecToArray(staticMethods));
     }
 }

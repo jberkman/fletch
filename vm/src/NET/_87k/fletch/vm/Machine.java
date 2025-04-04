@@ -13,8 +13,11 @@ class Nop implements Opcode {
 /**
  * A Java Virtual Machine.
  */
-public final class Machine {
-    private static AddressSpace cpu;
+public abstract class Machine {
+    protected static AddressSpace cpu;
+    protected static ClassFileLoader classFileLoader;
+
+    static ObjectHandle systemClassLoader;
 
     /**
      * Index into heap specifying the first unallocated byte.
@@ -30,7 +33,7 @@ public final class Machine {
      * unsigned, must be anded with 0xffff to access upper 32k ROM
      * addresses.
      *
-     * @see Machine#readPC
+     * @see Machine#readPc
      */
     private static short pc;
 
@@ -97,9 +100,9 @@ public final class Machine {
         return ObjectHandle.getById((short) pop());
     }
 
-    //public static byte[] popByteArray() {
-    //    return ((ArrayHandle) popRef()).bytes();
-    //}
+    // public static byte[] popByteArray() {
+    // return ((ArrayHandle) popRef()).bytes();
+    // }
 
     public static boolean popBoolean() {
         return pop() != 0;
@@ -111,7 +114,7 @@ public final class Machine {
      * @return Next value of program counter.
      * @see Machine#pc
      */
-    public static byte readPC() {
+    public static byte readPc() {
         return cpu.load(pc++);
     }
 
@@ -119,11 +122,26 @@ public final class Machine {
         cpu.halt();
     }
 
-    public static void main(AddressSpace cpu, ClassFileLoader classFileLoader, String[] args) {
-        Machine.cpu = cpu;
-
+    public static void boot(String mainClass, String[] args) {
+        BootstrapClassLoader classLoader = new BootstrapClassLoader();
         try {
-            ClassObject.bootstrap(classFileLoader);
+            // Create the Class object for java.lang.Class
+            ClassObjectHandle classClassHandle = classLoader.loadClassObject("java/lang/Class").handle;
+
+            // Bind the java.lang.Class object to the class class
+            classClassHandle.bindClassClassHandle();
+
+            ClassObjectHandle loaderClassHandle = classLoader
+                    .loadClassObject("NET/_87k/fletch/libjava/SystemClassLoader").handle;
+            systemClassLoader = new ObjectHandle(loaderClassHandle);
+
+            loaderClassHandle.bindClassLoader(systemClassLoader);
+            NativeClassLoader.adopt(loaderClassHandle);
+
+            classClassHandle.bindClassLoader(systemClassLoader);
+            NativeClassLoader.adopt(classClassHandle);
+
+            loaderClassHandle.invokeSpecial("<init>", "()V");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(1);

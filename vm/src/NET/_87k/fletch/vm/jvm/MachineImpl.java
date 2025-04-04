@@ -2,14 +2,18 @@ package NET._87k.fletch.vm.jvm;
 
 import NET._87k.fletch.vm.Machine;
 
-public class MachineImpl {
+public class MachineImpl extends Machine {
 
     public static void main(String[] args) {
-        String[] machineArgs = new String[args.length - 1];
+        cpu = new AddressSpaceImpl();
+        classFileLoader = new ClassFileLoaderImpl(args[0]);
+
+        String[] machineArgs = new String[args.length - 2];
         for (int i = 0; i < machineArgs.length; i++) {
-            machineArgs[i] = args[i+1];
+            machineArgs[i] = args[i+2];
         }
-        Machine.main(new AddressSpaceImpl(), new ClassFileLoaderImpl(args[0]), machineArgs);
+
+        boot(args[1], machineArgs);
     }
 
 
