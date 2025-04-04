@@ -1,7 +1,10 @@
 package NET._87k.fletch.vm;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
 public interface Opcode {
-    void execute();
+    OpcodeResult execute(DataInputStream bytecode) throws IOException;
 /*
     byte AALOAD = (byte) 0x32;
     byte AASTORE = (byte) 0x53;
@@ -116,7 +119,7 @@ public interface Opcode {
     byte ICONST_4 = (byte) 0x7;
     byte ICONST_5 = (byte) 0x8;
     byte IDIV = (byte) 0x6c;
-    
+
     byte IF_ACMPEQ = (byte) 0xa5;
     byte IF_ACMPNE = (byte) 0xa6;
     byte IF_ICMPEQ = (byte) 0x9f;
@@ -133,7 +136,7 @@ public interface Opcode {
     byte IFLE = (byte) 0x9e;
     byte IFNONNULL = (byte) 0xc7;
     byte IFNULL = (byte) 0xc6;
-    
+
     byte IINC = (byte) 0x84;
     byte ILOAD = (byte) 0x15;
     byte ILOAD_0 = (byte) 0x1a;
@@ -176,7 +179,7 @@ public interface Opcode {
     byte LCMP = (byte) 0x94;
     byte LCONST_0 = (byte) 0x9;
     byte LCONST_1 = (byte) 0xa;
-    
+
     byte LDC = (byte) 0x12;
     byte LDC_W = (byte) 0x13;
     byte LDC2_W = (byte) 0x14;

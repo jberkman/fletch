@@ -15,5 +15,8 @@ abstract class MemberInfo {
         return (accessFlags & AccessFlags.ACC_STATIC) != 0;
     }
 
+    boolean isNative() {
+        return (accessFlags & AccessFlags.ACC_NATIVE) != 0;
+    }
 
 }

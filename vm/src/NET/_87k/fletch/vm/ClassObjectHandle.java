@@ -1,5 +1,9 @@
 package NET._87k.fletch.vm;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+
 final class ClassObjectHandle extends ObjectHandle {
     private static ClassObjectHandle classClassHandle;
 
@@ -44,7 +48,6 @@ final class ClassObjectHandle extends ObjectHandle {
         }
         for (int j = 0; j < classObject.definition.instanceFields.length; i++, j++) {
             fields[i] = classObject.definition.instanceFields[j].defaultValue();
-            System.out.println(classObject.definition.thisClass + "." + classObject.definition.instanceFields[j].name + " = " + fields[i]);
         }
         return i;
     }
@@ -64,12 +67,17 @@ final class ClassObjectHandle extends ObjectHandle {
             if (!name.equals(method.name) || !descriptor.equals(method.descriptor)) {
                 continue;
             }
-            System.out.println(classObject.definition.thisClass + "." + name + descriptor);
-            Slice code = method.code.code;
-            for (int j = code.offset; j < code.offset + code.length; j++) {
-                System.out.print("0x" + Integer.toHexString(code.bytes[j] & 0xff) + " ");
+            if (method.isNative()) {
+                throw new ClassFormatError();
+            } else {
+                Slice code = method.code.code;
+                DataInputStream bytecode = new DataInputStream(new ByteArrayInputStream(code.bytes, code.offset, code.length));
+                try {
+                    Machine.invokeBytecode(bytecode);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            System.out.println();
             return;
         }
         throw new NoSuchMethodError();

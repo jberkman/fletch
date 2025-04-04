@@ -1,12 +1,38 @@
 package NET._87k.fletch.vm;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
  *
  */
 class Nop implements Opcode {
-    public void execute() {
+    public OpcodeResult execute(DataInputStream bytecode) {
+        System.out.println("nop");
+        return OpcodeResult.CONTINUE;
+    }
+}
+
+class Aload0 implements Opcode {
+    public OpcodeResult execute(DataInputStream bytecode) {
+        System.out.println("aload_0");
+        return OpcodeResult.CONTINUE;
+    }
+}
+
+class InvokeSpecial implements Opcode {
+    public OpcodeResult execute(DataInputStream bytecode) throws IOException {
+        int index = bytecode.readUnsignedShort();
+        System.out.println("invokespecial " + index);
+        return OpcodeResult.CONTINUE;
+    }
+}
+
+class Return implements Opcode {
+    public OpcodeResult execute(DataInputStream bytecode) throws IOException {
+        System.out.println("return");
+        return OpcodeResult.RETURN;
     }
 }
 
@@ -18,6 +44,22 @@ public abstract class Machine {
     protected static ClassFileLoader classFileLoader;
 
     static ObjectHandle systemClassLoader;
+    private static final Opcode[] opcodes = new Opcode[256];
+
+    /**
+     * Initialize a table of op codes. Each entry that refers to a valid
+     * instruction is initialized with an instance of Opcode that can
+     * be executed. Invalid instructions store null.
+     *
+     * @return opcode lookup table
+     * @see Opcode
+     */
+    static {
+        opcodes[0x00] = new Nop();
+        opcodes[0x2a] = new Aload0();
+        opcodes[0xb1] = new Return();
+        opcodes[0xb7] = new InvokeSpecial();
+    }
 
     /**
      * Index into heap specifying the first unallocated byte.
@@ -36,22 +78,6 @@ public abstract class Machine {
      * @see Machine#readPc
      */
     private static short pc;
-
-    /**
-     * Initialize a table of op codes. Each entry that refers to a valid
-     * instruction is initialized with an instance of Opcode that can
-     * be executed. Invalid instructions store null.
-     *
-     * @return opcode lookup table
-     * @see Opcode
-     */
-    static Opcode[] createOpcodeTable() {
-        Opcode[] opCodes = new Opcode[256];
-
-        opCodes[0x0] = new Nop();
-
-        return opCodes;
-    }
 
     /**
      * Push a 32-bit value onto the stack, in little-endian byteorder.
@@ -122,6 +148,17 @@ public abstract class Machine {
         cpu.halt();
     }
 
+    public static void invokeBytecode(DataInputStream bytecode) throws IOException {
+        OpcodeResult result = OpcodeResult.CONTINUE;
+        while (bytecode.available() > 0 && result == OpcodeResult.CONTINUE) {
+            int opcode = bytecode.readUnsignedByte();
+            if (opcodes[opcode] == null) {
+                throw new InternalError("Invalid instruction: 0x" + Integer.toHexString(opcode));
+            }
+            result = opcodes[opcode].execute(bytecode);
+        }
+    }
+
     public static void boot(String mainClass, String[] args) {
         BootstrapClassLoader classLoader = new BootstrapClassLoader();
         try {
@@ -146,14 +183,5 @@ public abstract class Machine {
             e.printStackTrace();
             System.exit(1);
         }
-
-        // load(args[0])
-        // intern(args)
-        // pc = args[0].Main
-
-        // Opcode[] ops = createOpcodeTable();
-        // while (true) {
-        // ops[readPC()].execute();
-        // }
     }
 }
