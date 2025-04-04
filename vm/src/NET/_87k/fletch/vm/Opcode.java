@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public interface Opcode {
-    OpcodeResult execute(DataInputStream bytecode) throws IOException;
+    OpcodeResult execute();
 /*
     byte AALOAD = (byte) 0x32;
     byte AASTORE = (byte) 0x53;

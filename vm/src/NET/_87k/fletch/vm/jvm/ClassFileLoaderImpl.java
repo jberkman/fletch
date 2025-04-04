@@ -1,24 +1,26 @@
 package NET._87k.fletch.vm.jvm;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import NET._87k.fletch.vm.Slice;
+import NET._87k.fletch.vm.AddressRange;
+import NET._87k.fletch.vm.AddressSpace;
 import NET._87k.fletch.vm.ClassFileLoader;
 
 class ClassFileLoaderImpl implements ClassFileLoader {
-    private String[] classPath;
+    private final String[] classPath;
+    private final AddressSpace cpu;
+    private int rp = AddressSpaceImpl.ROM_BASE;
 
-    ClassFileLoaderImpl(String classPath) {
+    ClassFileLoaderImpl(String classPath, AddressSpace cpu) {
         this.classPath = classPath.split("\\:");
+        this.cpu = cpu;
     }
 
-    public Slice loadClassFile(String name) throws ClassNotFoundException {
+    public AddressRange loadClassFile(String name) throws ClassNotFoundException {
         Throwable ex = null;
-        byte[] buf = new byte[8192];
         for (int i = 0; i < classPath.length; i++) {
             String fileName = classPath[i] + "/" + name + ".class";
             InputStream file;
@@ -30,17 +32,14 @@ class ClassFileLoaderImpl implements ClassFileLoader {
             }
 
             try {
-                ByteArrayOutputStream buffer = new ByteArrayOutputStream(file.available());
-                while (true) {
-                    int len = file.read(buf);
-                    if (len < 0) {
-                        break;
-                    }
-                    buffer.write(buf, 0, len);
+                int base = rp;
+                while (file.available() > 0) {
+                    int b = file.read();
+                    cpu.store(rp++, b);
                 }
-                byte[] bytes = buffer.toByteArray();
-                System.out.println("Loaded " + fileName);
-                return new Slice(bytes, 0, bytes.length);
+                AddressRange ret = new AddressRange(base, rp - base);
+                System.out.println("Loaded " + fileName + ": " + ret);
+                return ret;
             } catch (Throwable e) {
                 ex = e;
                 continue;

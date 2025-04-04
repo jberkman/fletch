@@ -8,29 +8,29 @@ import java.io.IOException;
  *
  */
 class Nop implements Opcode {
-    public OpcodeResult execute(DataInputStream bytecode) {
+    public OpcodeResult execute() {
         System.out.println("nop");
         return OpcodeResult.CONTINUE;
     }
 }
 
 class Aload0 implements Opcode {
-    public OpcodeResult execute(DataInputStream bytecode) {
+    public OpcodeResult execute() {
         System.out.println("aload_0");
         return OpcodeResult.CONTINUE;
     }
 }
 
 class InvokeSpecial implements Opcode {
-    public OpcodeResult execute(DataInputStream bytecode) throws IOException {
-        int index = bytecode.readUnsignedShort();
+    public OpcodeResult execute() {
+        int index = Machine.readPc2();
         System.out.println("invokespecial " + index);
         return OpcodeResult.CONTINUE;
     }
 }
 
 class Return implements Opcode {
-    public OpcodeResult execute(DataInputStream bytecode) throws IOException {
+    public OpcodeResult execute() {
         System.out.println("return");
         return OpcodeResult.RETURN;
     }
@@ -67,7 +67,7 @@ public abstract class Machine {
      * @see Machine#push
      * @see Machine#pop
      */
-    private static short sp;
+    private static int sp;
 
     /**
      * Program counter register. Contains address of current instruction
@@ -77,7 +77,7 @@ public abstract class Machine {
      *
      * @see Machine#readPc
      */
-    private static short pc;
+    private static int pc;
 
     /**
      * Push a 32-bit value onto the stack, in little-endian byteorder.
@@ -88,10 +88,10 @@ public abstract class Machine {
      * @see Machine#sp
      */
     public static void push(int i) {
-        cpu.store(sp++, (byte) ((i >> 0) & 0xff));
-        cpu.store(sp++, (byte) ((i >> 8) & 0xff));
-        cpu.store(sp++, (byte) ((i >> 16) & 0xff));
-        cpu.store(sp++, (byte) ((i >> 24) & 0xff));
+        cpu.store(sp++, (i >> 0) & 0xff);
+        cpu.store(sp++, (i >> 8) & 0xff);
+        cpu.store(sp++, (i >> 16) & 0xff);
+        cpu.store(sp++, (i >> 24) & 0xff);
     }
 
     public static void push(byte b) {
@@ -140,23 +140,33 @@ public abstract class Machine {
      * @return Next value of program counter.
      * @see Machine#pc
      */
-    public static byte readPc() {
+    public static int readPc() {
         return cpu.load(pc++);
+    }
+
+    public static int readPc2() {
+        int byte1 = readPc();
+        int byte2 = readPc();
+        return (byte1 << 8) | byte2;
     }
 
     public static void halt() {
         cpu.halt();
     }
 
-    public static void invokeBytecode(DataInputStream bytecode) throws IOException {
+    public static void invokeBytecode(AddressRange addressRange) {
         OpcodeResult result = OpcodeResult.CONTINUE;
-        while (bytecode.available() > 0 && result == OpcodeResult.CONTINUE) {
-            int opcode = bytecode.readUnsignedByte();
+        int oldPc = pc;
+        pc = addressRange.base;
+        int end = pc + addressRange.length;
+        while (pc < end && result == OpcodeResult.CONTINUE) {
+            int opcode = readPc();
             if (opcodes[opcode] == null) {
                 throw new InternalError("Invalid instruction: 0x" + Integer.toHexString(opcode));
             }
-            result = opcodes[opcode].execute(bytecode);
+            result = opcodes[opcode].execute();
         }
+        pc = oldPc;
     }
 
     public static void boot(String mainClass, String[] args) {

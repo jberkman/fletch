@@ -11,7 +11,7 @@ public interface AddressSpace {
      * @return stack base address in RAM (lower 32k).
      * @see AddressSpace#stackSize
      */
-    public short stackBase();
+    public int stackBase();
 
     /**
      * Number of bytes allocated in stack.
@@ -19,7 +19,7 @@ public interface AddressSpace {
      * @return Length of stack in bytes.
      * @see AddressSpace#stackBase()
      */
-    public short stackSize();
+    public int stackSize();
 
     /**
      * Return memory value at address addr.
@@ -28,7 +28,7 @@ public interface AddressSpace {
      * @return Value of memory stored at addr
      * @see AddressSpace#store
      */
-    public byte load(short addr);
+    public int load(int addr);
 
     /**
      * Store value in memory at address addr.
@@ -37,7 +37,7 @@ public interface AddressSpace {
      * @param b    Value of memory to be stored
      * @see AddressSpace#load
      */
-    public void store(short addr, byte b);
+    public void store(int addr, int b);
 
     /**
      * Halt execution. This method should not return.

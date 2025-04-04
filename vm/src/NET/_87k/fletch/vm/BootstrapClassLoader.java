@@ -11,8 +11,8 @@ final class BootstrapClassLoader {
     BootstrapClassLoader() {
     }
 
-    private ClassObject defineClassObject(String className, byte[] bytes, int offset, int len) throws ClassNotFoundException {
-        ClassFileReader reader = new ClassFileReader(bytes, offset, len);
+    private ClassObject defineClassObject(String className, AddressRange bytes) throws ClassNotFoundException {
+        ClassFileInputStream reader = new ClassFileInputStream(bytes);
         ClassDefinition def;
         try {
             def = reader.readClassFile();
@@ -37,8 +37,8 @@ final class BootstrapClassLoader {
         if (classObject != null) {
             return classObject;
         }
-        Slice slice = Machine.classFileLoader.loadClassFile(className);
-        classObject = defineClassObject(className, slice.bytes, slice.offset, slice.length);
+        AddressRange bytes = Machine.classFileLoader.loadClassFile(className);
+        classObject = defineClassObject(className, bytes);
         classObjects.put(className, classObject);
         return classObject;
     }

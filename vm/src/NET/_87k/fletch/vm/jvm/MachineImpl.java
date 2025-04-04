@@ -6,7 +6,7 @@ public class MachineImpl extends Machine {
 
     public static void main(String[] args) {
         cpu = new AddressSpaceImpl();
-        classFileLoader = new ClassFileLoaderImpl(args[0]);
+        classFileLoader = new ClassFileLoaderImpl(args[0], cpu);
 
         String[] machineArgs = new String[args.length - 2];
         for (int i = 0; i < machineArgs.length; i++) {

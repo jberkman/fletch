@@ -70,13 +70,7 @@ final class ClassObjectHandle extends ObjectHandle {
             if (method.isNative()) {
                 throw new ClassFormatError();
             } else {
-                Slice code = method.code.code;
-                DataInputStream bytecode = new DataInputStream(new ByteArrayInputStream(code.bytes, code.offset, code.length));
-                try {
-                    Machine.invokeBytecode(bytecode);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                Machine.invokeBytecode(method.code.code);
             }
             return;
         }

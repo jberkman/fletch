@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
-final class ClassFileReader extends DataInputStream {
+final class ClassFileInputStream extends DataInputStream {
     static final int MAGIC = 0xcafebabe;
     static final short MAJOR_VERSION = 45;
     static final short MINOR_VERSION = 3;
@@ -22,23 +22,15 @@ final class ClassFileReader extends DataInputStream {
     static final byte CONSTANT_NAME_AND_TYPE = 12;
     static final byte CONSTANT_UTF8 = 1;
 
-    private final PosInputStream pos;
-    private final byte[] bytes;
-    private final int length;
+    private final AddressRangeInputStream in;
 
-    private ClassFileReader(PosInputStream pos, byte[] bytes, int length) {
-        super(pos);
-        this.pos = pos;
-        this.bytes = bytes;
-        this.length = length;
+    private ClassFileInputStream(AddressRangeInputStream in) {
+        super(in);
+        this.in = in;
     }
 
-    ClassFileReader(byte[] bytes, int offset, int length) {
-        this(new PosInputStream(bytes, offset, length), bytes, length);
-    }
-
-    ClassFileReader(Slice slice) {
-        this(slice.bytes, slice.offset, slice.length);
+    ClassFileInputStream(AddressRange addressRange) {
+        this(new AddressRangeInputStream(addressRange));
     }
 
     private void readHeader() throws IOException {
@@ -133,12 +125,6 @@ final class ClassFileReader extends DataInputStream {
         return interfaces;
     }
 
-    private Slice readSlice(int length) throws IOException {
-        Slice slice = new Slice(bytes, pos.pos(), length);
-        skipBytes(length);
-        return slice;
-    }
-
     private FieldInfo readField(ConstantPool pool, boolean isInterface) throws IOException {
         int accessFlags = readUnsignedShort();
         if (!AccessFlags.areValidForField(accessFlags, isInterface)) {
@@ -186,7 +172,8 @@ final class ClassFileReader extends DataInputStream {
         int maxStack = readUnsignedShort();
         int maxLocals = readUnsignedShort();
         int codeLen = readInt();
-        Slice code = readSlice(codeLen);
+        AddressRange code = new AddressRange(in.pos, codeLen);
+        skipBytes(codeLen);
         int count = readUnsignedShort();
         ExceptionTableEntry[] exceptions = new ExceptionTableEntry[count];
         for (int i = 0; i < count; i++) {
@@ -304,7 +291,7 @@ final class ClassFileReader extends DataInputStream {
             skipBytes(readInt());
         }
 
-        if (pos.pos() != this.length) {
+        if (available() > 0) {
             throw new ClassFormatError();
         }
 
