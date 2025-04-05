@@ -9,14 +9,14 @@ import java.io.IOException;
  */
 class Nop implements Opcode {
     public OpcodeResult execute() {
-        System.out.println("nop");
+        System.out.println(Integer.toHexString(Machine.pc - 1) + ": nop");
         return OpcodeResult.CONTINUE;
     }
 }
 
 class Aload0 implements Opcode {
     public OpcodeResult execute() {
-        System.out.println("aload_0");
+        System.out.println(Integer.toHexString(Machine.pc - 1) + ": aload_0");
         Machine.callStack.push(Machine.callStack.loadLocal(0));
         return OpcodeResult.CONTINUE;
     }
@@ -25,7 +25,7 @@ class Aload0 implements Opcode {
 class InvokeSpecial implements Opcode {
     public OpcodeResult execute() {
         int index = Machine.readPc2();
-        System.out.println("invokespecial " + index);
+        System.out.println(Integer.toHexString(Machine.pc - 3) + ": invokespecial " + index);
         //NameAndTypeInfo nat = Machine.callStack.currentObjectHandle().classObject.definition.constantPool.method(index);
         //System.out.println(nat.name() + "." + nat.descriptor());
 
@@ -35,7 +35,7 @@ class InvokeSpecial implements Opcode {
 
 class Return implements Opcode {
     public OpcodeResult execute() {
-        System.out.println("return");
+        System.out.println(Integer.toHexString(Machine.pc - 1) + ": return");
         return OpcodeResult.RETURN;
     }
 }
