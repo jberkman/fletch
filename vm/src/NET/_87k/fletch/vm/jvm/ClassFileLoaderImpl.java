@@ -35,7 +35,7 @@ class ClassFileLoaderImpl implements ClassFileLoader {
                     rom.flashByte(rp++, b);
                 }
                 AddressRange ret = new AddressRange(base, rp - base);
-                System.out.println("Loaded " + fileName + ": " + ret);
+                System.out.println(Integer.toHexString(base) + ": Loaded " + fileName + " (" + ret.length + " B)");
                 return ret;
             } catch (Throwable e) {
                 throw new ClassNotFoundException(name, e);
