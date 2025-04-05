@@ -17,6 +17,7 @@ class Nop implements Opcode {
 class Aload0 implements Opcode {
     public OpcodeResult execute() {
         System.out.println("aload_0");
+        Machine.callStack.push(Machine.callStack.loadLocal(0));
         return OpcodeResult.CONTINUE;
     }
 }
@@ -25,6 +26,9 @@ class InvokeSpecial implements Opcode {
     public OpcodeResult execute() {
         int index = Machine.readPc2();
         System.out.println("invokespecial " + index);
+        //NameAndTypeInfo nat = Machine.callStack.currentObjectHandle().classObject.definition.constantPool.method(index);
+        //System.out.println(nat.name() + "." + nat.descriptor());
+
         return OpcodeResult.CONTINUE;
     }
 }
@@ -40,11 +44,22 @@ class Return implements Opcode {
  * A Java Virtual Machine.
  */
 public abstract class Machine {
-    protected static AddressSpace cpu;
+    protected static Rom rom;
     protected static ClassFileLoader classFileLoader;
 
-    static ObjectHandle systemClassLoader;
+    static CallStack callStack = new CallStack();
+
     private static final Opcode[] opcodes = new Opcode[256];
+
+    /**
+     * Program counter register. Contains address of current instruction
+     * within the full 64k address space. Due to Java's lack of
+     * unsigned, must be anded with 0xffff to access upper 32k ROM
+     * addresses.
+     *
+     * @see Machine#readPc
+     */
+    static int pc;
 
     /**
      * Initialize a table of op codes. Each entry that refers to a valid
@@ -62,86 +77,13 @@ public abstract class Machine {
     }
 
     /**
-     * Index into heap specifying the first unallocated byte.
-     *
-     * @see Machine#push
-     * @see Machine#pop
-     */
-    private static int sp;
-
-    /**
-     * Program counter register. Contains address of current instruction
-     * within the full 64k address space. Due to Java's lack of
-     * unsigned, must be anded with 0xffff to access upper 32k ROM
-     * addresses.
-     *
-     * @see Machine#readPc
-     */
-    private static int pc;
-
-    /**
-     * Push a 32-bit value onto the stack, in little-endian byteorder.
-     * The sp register is incremented by 4.
-     *
-     * @param i value pushed onto the stack.
-     * @see Machine#pop
-     * @see Machine#sp
-     */
-    public static void push(int i) {
-        cpu.store(sp++, (i >> 0) & 0xff);
-        cpu.store(sp++, (i >> 8) & 0xff);
-        cpu.store(sp++, (i >> 16) & 0xff);
-        cpu.store(sp++, (i >> 24) & 0xff);
-    }
-
-    public static void push(byte b) {
-        push(b & 0xffff);
-    }
-
-    public static void push(short s) {
-        push(s & 0xffff);
-    }
-
-    public static void push(ObjectHandle obj) {
-        push(obj.id & 0xffff);
-    }
-
-    /**
-     * Pop a 32-bit value from the stack, in little-endian byteorder.
-     * The sp register is decremented by 4;
-     *
-     * @return The value popped from the stack.
-     * @see Machine#push
-     * @see Machine#sp
-     */
-    public static int pop() {
-        int i = (0xff & cpu.load(--sp)) << 24;
-        i |= (0xff & cpu.load(--sp)) << 16;
-        i |= (0xff & cpu.load(--sp)) << 8;
-        i |= (0xff & cpu.load(--sp));
-        return i;
-    }
-
-    public static ObjectHandle popRef() {
-        return ObjectHandle.getById((short) pop());
-    }
-
-    // public static byte[] popByteArray() {
-    // return ((ArrayHandle) popRef()).bytes();
-    // }
-
-    public static boolean popBoolean() {
-        return pop() != 0;
-    }
-
-    /**
      * Read the current value of the pc register, incrementing it.
      *
      * @return Next value of program counter.
      * @see Machine#pc
      */
     public static int readPc() {
-        return cpu.load(pc++);
+        return rom.load(pc++);
     }
 
     public static int readPc2() {
@@ -150,15 +92,12 @@ public abstract class Machine {
         return (byte1 << 8) | byte2;
     }
 
-    public static void halt() {
-        cpu.halt();
-    }
-
-    public static void invokeBytecode(AddressRange addressRange) {
-        OpcodeResult result = OpcodeResult.CONTINUE;
+    public static void invoke(ClassHandle classHandle, MethodInfo method) {
         int oldPc = pc;
-        pc = addressRange.base;
-        int end = pc + addressRange.length;
+        OpcodeResult result = OpcodeResult.CONTINUE;
+        pc = method.code.code.base;
+        int end = pc + method.code.code.length;
+        callStack.pushFrame(classHandle, method);
         while (pc < end && result == OpcodeResult.CONTINUE) {
             int opcode = readPc();
             if (opcodes[opcode] == null) {
@@ -166,29 +105,23 @@ public abstract class Machine {
             }
             result = opcodes[opcode].execute();
         }
+        callStack.popFrame();
         pc = oldPc;
     }
 
-    public static void boot(String mainClass, String[] args) {
-        BootstrapClassLoader classLoader = new BootstrapClassLoader();
+    public static void boot(String mainClassName, String[] args) {
         try {
             // Create the Class object for java.lang.Class
-            ClassObjectHandle classClassHandle = classLoader.loadClassObject("java/lang/Class").handle;
+            ClassHandle classClass = ClassHandle.forName("java.lang.Class");
 
             // Bind the java.lang.Class object to the class class
-            classClassHandle.bindClassClassHandle();
+            classClass.bindClassClassHandle();
 
-            ClassObjectHandle loaderClassHandle = classLoader
-                    .loadClassObject("NET/_87k/fletch/libjava/SystemClassLoader").handle;
-            systemClassLoader = new ObjectHandle(loaderClassHandle);
+            ArrayHandle argsHandle = new ArrayHandle(new ObjectHandle[0], "java.lang.String");
+            ClassHandle mainClass = ClassHandle.forName(mainClassName);
 
-            loaderClassHandle.bindClassLoader(systemClassLoader);
-            NativeClassLoader.adopt(loaderClassHandle);
-
-            classClassHandle.bindClassLoader(systemClassLoader);
-            NativeClassLoader.adopt(classClassHandle);
-
-            loaderClassHandle.invokeSpecial("<init>", "()V");
+            callStack.push(argsHandle.id);
+            mainClass.invokeStatic("main", "([Ljava/lang/String;)V");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(1);

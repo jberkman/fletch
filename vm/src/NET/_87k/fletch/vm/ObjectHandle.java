@@ -8,10 +8,10 @@ class ObjectHandle {
     private static final Dictionary handles = new Hashtable();
 
     final short id;
-    private ClassObjectHandle classHandle;
+    private ClassHandle classHandle;
     private Object[] fields;
 
-    ObjectHandle(ClassObjectHandle classHandle) {
+    ObjectHandle(ClassHandle classHandle) {
         id = nextId++;
         handles.put(new Integer(id & 0xffff), this);
         if (classHandle != null) {
@@ -23,22 +23,48 @@ class ObjectHandle {
         return (ObjectHandle) handles.get(new Integer(id & 0xffff));
     }
 
-    void setClassHandle(ClassObjectHandle classHandle) {
+    private int initializeInstanceFields(ClassHandle classHandle) {
+        int i = 0;
+        if (classHandle.superHandle != null) {
+            i = initializeInstanceFields(classHandle.superHandle);
+        }
+        for (int j = 0; j < classHandle.definition.instanceFields.length; i++, j++) {
+            fields[i] = classHandle.definition.instanceFields[j].defaultValue();
+        }
+        return i;
+    }
+
+    void setClassHandle(ClassHandle classHandle) {
         if (this.classHandle != null) {
             throw new IllegalStateException();
         }
         this.classHandle = classHandle;
-        int count = 0;
-        while (classHandle != null) {
-            count += classHandle.classObject.definition.instanceFields.length;
-            classHandle = classHandle.superHandle();
-        }
-        fields = new Object[count];
-        this.classHandle.initializeInstanceFields(fields);
+        fields = new Object[classHandle.instanceFieldCount()];
+        this.initializeInstanceFields(classHandle);
     }
 
-    ClassObjectHandle classHandle() {
+    ClassHandle classHandle() {
         return classHandle;
+    }
+
+    Object getField(int index) {
+        return fields[index];
+    }
+
+    void setField(int index, Object value) {
+        fields[index] = value;
+    }
+
+    void invokeSpecial(String name, String descriptor) {
+        MethodInfo method = classHandle.definition.instanceMethodInfo(name, descriptor);
+        if (method == null) {
+            throw new NoSuchMethodError();
+        }
+        if (method.isNative()) {
+            throw new ClassFormatError();
+        } else {
+            Machine.invoke(classHandle, method);
+        }
     }
 
 }

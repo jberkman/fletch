@@ -2,7 +2,6 @@ package NET._87k.fletch.vm;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Vector;
 
 final class ClassFileInputStream extends DataInputStream {
@@ -295,7 +294,8 @@ final class ClassFileInputStream extends DataInputStream {
             throw new ClassFormatError();
         }
 
-        return new ClassDefinition(accessFlags, thisClass, superClass, interfaces, fieldVecToArray(instanceFields),
-                fieldVecToArray(staticFields), methodVecToArray(instanceMethods), methodVecToArray(staticMethods));
+        return new ClassDefinition(accessFlags, pool, thisClass, superClass, interfaces,
+                fieldVecToArray(instanceFields), fieldVecToArray(staticFields), methodVecToArray(instanceMethods),
+                methodVecToArray(staticMethods));
     }
 }

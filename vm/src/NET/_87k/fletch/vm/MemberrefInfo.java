@@ -9,6 +9,7 @@ abstract class MemberrefInfo implements ConstantPoolEntry {
     private final int natIndex;
 
     private String className;
+    private ClassHandle classHandle;
     private NameAndTypeInfo nat;
 
     MemberrefInfo(ConstantPool pool, int classIndex, int nameAndTypeIndex) {
@@ -22,6 +23,13 @@ abstract class MemberrefInfo implements ConstantPoolEntry {
             return className;
         }
         return className = pool.utf8String(classIndex);
+    }
+
+    ClassHandle classHandle() {
+        if (classHandle != null) {
+            return classHandle;
+        }
+        return classHandle; // = ClassObjectHandle.forName(className());
     }
 
     private NameAndTypeInfo nat() {

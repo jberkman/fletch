@@ -17,7 +17,7 @@ class AddressRangeInputStream extends InputStream {
         if (remaining-- == 0) {
             return -1;
         }
-        return Machine.cpu.load(pos++);
+        return Machine.rom.load(pos++);
     }
 
     public int available() throws IOException {

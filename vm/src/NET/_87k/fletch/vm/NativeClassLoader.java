@@ -1,12 +1,6 @@
 package NET._87k.fletch.vm;
 
-import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Hashtable;
-
 final class NativeClassLoader implements NativeMethod {
-
-    private static Dictionary classHandles = new Hashtable();
 
     public void invoke(String methodName, String methodSignature) throws Throwable {
         /*
@@ -39,16 +33,7 @@ final class NativeClassLoader implements NativeMethod {
         throw new NoSuchMethodError();
     }
 
-    static void adopt(ClassObjectHandle classObjectHandle) {
-        String className = classObjectHandle.classObject.definition.thisClass;
-        if (classHandles.get(className) != null) {
-            return;
-        }
-        classHandles.put(className, classObjectHandle);
-
-    }
-
-    static ClassObjectHandle defineClass(ClassObjectHandle classLoader, byte[] bytes, int offset, int len) {
+    static ClassHandle defineClass(ClassHandle classLoader, byte[] bytes, int offset, int len) {
         throw new RuntimeException();
     }
 

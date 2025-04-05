@@ -7,11 +7,15 @@ final class ConstantPool {
         this.entries = entries;
     }
 
-    ConstantValueInfo constantValue(int index) {
-        index -= 1; // pool is 1-indexed
+    private void checkIndex(int index) {
         if (index < 0 || index >= entries.length) {
             throw new ClassFormatError();
         }
+    }
+
+    ConstantValueInfo constantValue(int index) {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof ConstantValueInfo)) {
             throw new ClassFormatError();
@@ -21,9 +25,7 @@ final class ConstantPool {
 
     NameAndTypeInfo nameAndType(int index) {
         index -= 1; // pool is 1-indexed
-        if (index < 0 || index >= entries.length) {
-            throw new ClassFormatError();
-        }
+        checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof NameAndTypeInfo)) {
             throw new ClassFormatError();
@@ -33,9 +35,7 @@ final class ConstantPool {
 
     String className(int index) {
         index -= 1; // pool is 1-indexed
-        if (index < 0 || index >= entries.length) {
-            throw new ClassFormatError();
-        }
+        checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof ClassInfo)) {
             throw new ClassFormatError();
@@ -45,13 +45,22 @@ final class ConstantPool {
 
     String utf8String(int index) {
         index -= 1; // pool is 1-indexed
-        if (index < 0 || index >= entries.length) {
-            throw new ClassFormatError();
-        }
+        checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof Utf8Info)) {
             throw new ClassFormatError();
         }
         return ((Utf8Info) entry).string;
+    }
+
+    MethodInfo methodInfo(int index) {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MethodrefInfo)) {
+            throw new ClassFormatError();
+        }
+        return null;
+        //return ((MethodrefInfo) entry).methodInfo();
     }
 }

@@ -9,19 +9,12 @@ JAVAC_FLAGS := -Xlint:-options -source 1.3 -target 1.1 -d $(BIN_DIR) $(SOURCEPAT
 JAVADOC_FLAGS := -source 1.3 -d $(DOC_DIR) $(CLASSPATH_FLAGS) $(SOURCEPATH_FLAGS)
 JAVA_FLAGS := $(CLASSPATH_FLAGS)
 
-# Ensure the VM output directory exists
 all:
 	mkdir -p $(BIN_DIR)
-	javac $(JAVAC_FLAGS) $(SRC_DIR)/NET/_87k/fletch/vm/jvm/MachineImpl.java
-
-empty:
-	$(MAKE) -C ../empty
-
-run: all empty
-	java $(JAVA_FLAGS) NET._87k.fletch.vm.jvm.MachineImpl ../libjava/bin:../empty/bin Empty
+	javac $(JAVAC_FLAGS) $(SRC_DIR)/Empty.java
 
 doc:
-	javadoc $(JAVADOC_FLAGS) -private -subpackages NET._87k.fletch.vm
+	javadoc $(JAVADOC_FLAGS) -private -subpackages Empty
 
 clean:
 	rm -rf $(BIN_DIR) $(DOC_DIR)

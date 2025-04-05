@@ -5,7 +5,7 @@ final class ClassInfo implements ConstantPoolEntry {
     private final ConstantPool pool;
     private final int nameIndex;
     private String name;
-    private ClassObjectHandle handle;
+    private ClassHandle handle;
 
     ClassInfo(ConstantPool pool, int nameIndex) {
         this.pool = pool;
@@ -20,7 +20,7 @@ final class ClassInfo implements ConstantPoolEntry {
         return name = pool.utf8String(nameIndex);
     }
 
-    ClassObjectHandle handle() {
+    ClassHandle handle() {
         if (handle != null) {
             return handle;
         }

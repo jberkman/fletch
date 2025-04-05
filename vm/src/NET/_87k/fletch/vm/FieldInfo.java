@@ -10,10 +10,10 @@ final class FieldInfo extends MemberInfo {
     static {
         defaultValues.put("B", new Byte((byte) 0));
         defaultValues.put("C", new Character((char) 0));
-        defaultValues.put("D", new Double(0));
-        defaultValues.put("F", new Float(0));
+        defaultValues.put("D", new Double(0d));
+        defaultValues.put("F", new Float(0f));
         defaultValues.put("I", new Integer(0));
-        defaultValues.put("J", new Long(0));
+        defaultValues.put("J", new Long(0L));
         defaultValues.put("S", new Short((short) 0));
         defaultValues.put("Z", new Boolean(false));
     }
