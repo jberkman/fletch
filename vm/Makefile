@@ -14,10 +14,13 @@ all:
 	mkdir -p $(BIN_DIR)
 	javac $(JAVAC_FLAGS) $(SRC_DIR)/NET/_87k/fletch/vm/jvm/MachineImpl.java
 
+libjava:
+	$(MAKE) -C ../libjava
+
 empty:
 	$(MAKE) -C ../empty
 
-run: all empty
+run: all libjava empty
 	java $(JAVA_FLAGS) NET._87k.fletch.vm.jvm.MachineImpl ../libjava/bin:../empty/bin Empty
 
 doc:

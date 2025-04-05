@@ -1,6 +1,5 @@
 ./src/java/io/PrintStream.java
 ./src/java/lang/Class.java
-./src/java/lang/ClassLoader.java
 ./src/java/lang/ClassNotFoundException.java
 ./src/java/lang/Cloneable.java
 ./src/java/lang/Error.java
@@ -16,4 +15,3 @@
 ./src/java/lang/String.java
 ./src/java/lang/System.java
 ./src/java/lang/Throwable.java
-./src/NET/_87k/fletch/libjava/SystemClassLoader.java
