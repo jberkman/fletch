@@ -28,6 +28,7 @@ final class StringInfo implements ConstantPoolEntry, ConstantValueInfo {
     private final ConstantPool pool;
     private final int stringIndex;
     private String string;
+    private ObjectHandle value;
 
     StringInfo(ConstantPool pool, int stringIndex) {
         this.pool = pool;
@@ -41,8 +42,19 @@ final class StringInfo implements ConstantPoolEntry, ConstantValueInfo {
         return string = pool.utf8String(stringIndex);
     }
 
+    public String descriptor() {
+        return "Ljava/lang/String;";
+    }
+
     public Object value() {
-        return string();
+        if (value != null) {
+            return value;
+        }
+        try {
+            return value = new ObjectHandle(ClassHandle.forNameInternal("java/lang/String"));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

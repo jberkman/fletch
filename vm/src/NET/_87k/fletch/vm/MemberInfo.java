@@ -34,6 +34,10 @@ abstract class MemberInfo {
         this.descriptor = descriptor;
     }
 
+    public String toString() {
+        return name + ":" + descriptor;
+    }
+
     boolean isStatic() {
         return (accessFlags & AccessFlags.ACC_STATIC) != 0;
     }

@@ -23,9 +23,9 @@
 
 package NET._87k.fletch.vm.jvm;
 
-import NET._87k.fletch.vm.Machine;
+import NET._87k.fletch.vm.Interpreter;
 
-public class MachineImpl extends Machine {
+public class InterpreterImpl extends Interpreter {
 
     public static void main(String[] args) {
         rom = new RomImpl();

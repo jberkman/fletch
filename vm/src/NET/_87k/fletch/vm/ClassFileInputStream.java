@@ -155,7 +155,7 @@ final class ClassFileInputStream extends DataInputStream {
         String name = pool.utf8String(readUnsignedShort());
         String descriptor = pool.utf8String(readUnsignedShort());
         ConstantValueInfo value = null;
-        int count = readInt();
+        int count = readUnsignedShort();
         for (int i = 0; i < count; i++) {
             String attributeName = pool.utf8String(readUnsignedShort());
             int length = readInt();
@@ -183,8 +183,10 @@ final class ClassFileInputStream extends DataInputStream {
         for (int i = 0; i < count; i++) {
             FieldInfo fieldInfo = readField(pool, isInterface);
             if (fieldInfo.isStatic()) {
+                fieldInfo.index = staticFields.size();
                 staticFields.addElement(fieldInfo);
             } else {
+                // Need superclasses to determine instance field indices
                 instanceFields.addElement(fieldInfo);
             }
         }

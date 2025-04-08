@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 package NET._87k.fletch.vm;
 
 final class MethodInfo extends MemberInfo {
@@ -31,6 +30,61 @@ final class MethodInfo extends MemberInfo {
         super(accessFlags, name, descriptor);
         this.code = code;
         this.exceptions = exceptions;
+    }
+
+    int argumentStackSlots() {
+        int ret;
+        if (isStatic()) {
+            ret = 0;
+        } else {
+            ret = 1;
+        }
+        for (int i = 1; i < descriptor.length(); i++) {
+            switch (descriptor.charAt(i)) {
+                case 'L':
+                case '[':
+                    while (descriptor.charAt(++i) != ';') {
+                    }
+                case 'B':
+                case 'C':
+                case 'F':
+                case 'I':
+                case 'S':
+                case 'Z':
+                    ++ret;
+                    break;
+                case 'D':
+                case 'J':
+                    ret += 2;
+                    break;
+                case ')':
+                    return ret;
+                default:
+                    throw new ClassFormatError(descriptor);
+            }
+        }
+        throw new ClassFormatError(descriptor);
+    }
+
+    int returnValueStackSlots() {
+        int i = descriptor.indexOf(')');
+        switch (descriptor.charAt(i + 1)) {
+            case 'L':
+            case 'B':
+            case 'C':
+            case 'F':
+            case 'I':
+            case 'S':
+            case 'Z':
+                return 1;
+            case 'D':
+            case 'J':
+                return 2;
+            case 'V':
+                return 0;
+            default:
+                throw new ClassFormatError(descriptor);
+        }
     }
 
 }

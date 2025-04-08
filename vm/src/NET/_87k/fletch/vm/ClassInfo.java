@@ -43,11 +43,11 @@ final class ClassInfo implements ConstantPoolEntry {
         return name = pool.utf8String(nameIndex);
     }
 
-    ClassHandle handle() {
+    ClassHandle handle() throws ClassNotFoundException {
         if (handle != null) {
             return handle;
         }
-        throw new RuntimeException();
+        return ClassHandle.forNameInternal(name());
     }
 
 }

@@ -46,15 +46,14 @@ class ObjectHandle {
         return (ObjectHandle) handles.get(new Integer(id & 0xffff));
     }
 
-    private int initializeInstanceFields(ClassHandle classHandle) {
-        int i = 0;
+    private void initializeInstanceFields(ClassHandle classHandle) {
         if (classHandle.superHandle != null) {
-            i = initializeInstanceFields(classHandle.superHandle);
+            initializeInstanceFields(classHandle.superHandle);
         }
-        for (int j = 0; j < classHandle.definition.instanceFields.length; i++, j++) {
-            fields[i] = classHandle.definition.instanceFields[j].defaultValue();
+        for (int i = 0; i < classHandle.definition.instanceFields.length; i++) {
+            FieldInfo field = classHandle.definition.instanceFields[i];
+            fields[field.index] = field.defaultValue();
         }
-        return i;
     }
 
     void setClassHandle(ClassHandle classHandle) {
@@ -62,7 +61,8 @@ class ObjectHandle {
             throw new IllegalStateException();
         }
         this.classHandle = classHandle;
-        fields = new Object[classHandle.instanceFieldCount()];
+        classHandle.initialize();
+        fields = new Object[classHandle.fieldCount()];
         this.initializeInstanceFields(classHandle);
     }
 
@@ -78,15 +78,15 @@ class ObjectHandle {
         fields[index] = value;
     }
 
-    void invokeSpecial(String name, String descriptor) {
-        MethodInfo method = classHandle.definition.instanceMethodInfo(name, descriptor);
+    void invokeSpecial(String name, String descriptor) throws Throwable {
+        MethodInfo method = classHandle.definition.method(name, descriptor);
         if (method == null) {
             throw new NoSuchMethodError();
         }
         if (method.isNative()) {
             throw new ClassFormatError();
         } else {
-            Machine.invoke(classHandle, method);
+            ThreadContext.current().invoke(classHandle, method);
         }
     }
 

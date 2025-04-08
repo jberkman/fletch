@@ -41,7 +41,7 @@ final class ConstantPool {
         checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof ConstantValueInfo)) {
-            throw new ClassFormatError();
+            throw new ClassFormatError(entry.getClass().toString());
         }
         return (ConstantValueInfo) entry;
     }
@@ -51,7 +51,7 @@ final class ConstantPool {
         checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof NameAndTypeInfo)) {
-            throw new ClassFormatError();
+            throw new ClassFormatError(entry.getClass().toString());
         }
         return (NameAndTypeInfo) entry;
     }
@@ -61,9 +61,19 @@ final class ConstantPool {
         checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof ClassInfo)) {
-            throw new ClassFormatError();
+            throw new ClassFormatError(entry.getClass().toString());
         }
         return ((ClassInfo) entry).name();
+    }
+
+    ClassHandle classHandle(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof ClassInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((ClassInfo) entry).handle();
     }
 
     String utf8String(int index) {
@@ -71,19 +81,78 @@ final class ConstantPool {
         checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof Utf8Info)) {
-            throw new ClassFormatError();
+            throw new ClassFormatError("#" + (index + 1) + " = " + entry.getClass().toString());
         }
         return ((Utf8Info) entry).string;
     }
 
-    MethodInfo methodInfo(int index) {
+    String refClassName(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MemberrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((MemberrefInfo) entry).className();
+    }
+
+    ClassHandle refClass(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MemberrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((MemberrefInfo) entry).classHandle();
+    }
+
+    FieldInfo field(int index) throws ClassNotFoundException {
         index -= 1; // pool is 1-indexed
         checkIndex(index);
         ConstantPoolEntry entry = entries[index];
         if (!(entry instanceof MethodrefInfo)) {
-            throw new ClassFormatError();
+            throw new ClassFormatError(entry.getClass().toString());
         }
-        return null;
-        //return ((MethodrefInfo) entry).methodInfo();
+        return ((FieldrefInfo) entry).field();
+    }
+
+    FieldInfo staticField(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof FieldrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((FieldrefInfo) entry).staticField();
+    }
+
+    MethodInfo methodInfo(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MethodrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((MethodrefInfo) entry).methodInfo();
+    }
+
+    ClassHandle virtualMethodClass(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MethodrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((MethodrefInfo) entry).virtualMethodClass();
+    }
+
+    MethodInfo staticMethodInfo(int index) throws ClassNotFoundException {
+        index -= 1; // pool is 1-indexed
+        checkIndex(index);
+        ConstantPoolEntry entry = entries[index];
+        if (!(entry instanceof MethodrefInfo)) {
+            throw new ClassFormatError(entry.getClass().toString());
+        }
+        return ((MethodrefInfo) entry).staticMethodInfo();
     }
 }

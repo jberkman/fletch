@@ -43,7 +43,7 @@ public class Object {
     public final native void notifyAll();
 
     public String toString() {
-        throw new RuntimeException();
+        return "";
     }
 
     public final void wait() throws InterruptedException {

@@ -20,11 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 package NET._87k.fletch.vm;
 
 final class FieldrefInfo extends MemberrefInfo {
+    private FieldInfo fieldInfo;
+
     FieldrefInfo(ConstantPool pool, int classIndex, int nameAndTypeIndex) {
         super(pool, classIndex, nameAndTypeIndex);
     }
+
+    FieldInfo field() throws ClassNotFoundException {
+        if (fieldInfo != null) {
+            return fieldInfo;
+        }
+        ClassHandle classHandle = this.classHandle();
+        return fieldInfo = classHandle.definition.field(name(), descriptor());
+    }
+
+    FieldInfo staticField() throws ClassNotFoundException {
+        if (fieldInfo != null) {
+            return fieldInfo;
+        }
+        ClassHandle classHandle = this.classHandle();
+        return fieldInfo = classHandle.definition.staticField(name(), descriptor());
+    }
+
 }

@@ -31,6 +31,10 @@ final class LongInfo implements ConstantPoolEntry, ConstantValueInfo {
         value = new Long(((long)highBytes << 32) | (long)lowBytes);
     }
 
+    public String descriptor() {
+        return "J";
+    }
+
     public Object value() {
         return value;
     }

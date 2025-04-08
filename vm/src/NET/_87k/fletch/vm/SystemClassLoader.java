@@ -47,6 +47,10 @@ final class SystemClassLoader {
 
     private static final MethodInfo[] arrayStaticMethods = new MethodInfo[0];
 
+    static {
+        arrayInstanceFields[0].index = 0;
+    }
+
     private ClassHandle defineArrayClass(String className) throws ClassNotFoundException {
         ClassDefinition def = new ClassDefinition(
                 AccessFlags.ACC_PUBLIC | AccessFlags.ACC_FINAL | AccessFlags.ACC_SUPER,
@@ -92,7 +96,7 @@ final class SystemClassLoader {
         if (className.charAt(0) == '[') {
             handle = defineArrayClass(className);
         } else {
-            AddressRange bytes = Machine.classFileLoader.loadClassFile(className);
+            AddressRange bytes = Interpreter.classFileLoader.loadClassFile(className);
             handle = defineClass(className, bytes);
         }
         System.out.println("Defined class " + className);

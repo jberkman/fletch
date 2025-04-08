@@ -45,12 +45,13 @@ final class ClassHandle extends ObjectHandle {
     }
 
     static ClassHandle forName(String name) throws ClassNotFoundException {
-        ClassHandle currentClass = Machine.callStack.currentClass();
+        return forNameInternal(name.replace('.', '/'));
+    }
+
+    static ClassHandle forNameInternal(String name) throws ClassNotFoundException {
+        ClassHandle currentClass = ThreadContext.current().currentClass();
         if (currentClass != null && currentClass.classLoader != null) {
             throw new RuntimeException();
-        }
-        if (name.indexOf('/') == -1) {
-            name = name.replace('.', '/');
         }
         return systemClassLoader.loadClass(name);
     }
@@ -68,53 +69,57 @@ final class ClassHandle extends ObjectHandle {
         if (staticFields != null) {
             return;
         }
+        int fieldIndex = 0;
         if (superHandle != null) {
             superHandle.initialize();
+            fieldIndex = superHandle.fieldCount();
         }
         System.out.println(definition.thisClass + ".initialize()");
+        for (int i = 0; i < definition.instanceFields.length; i++) {
+            System.out.println(definition.instanceFields[i].name + ".index = " + fieldIndex);
+            definition.instanceFields[i].index = fieldIndex++;
+        }
         staticFields = new Object[definition.staticFields.length];
         for (int i = 0; i < staticFields.length; i++) {
             staticFields[i] = definition.staticFields[i].defaultValue();
             System.out.println(definition.thisClass + "." + definition.staticFields[i].name + " = " + staticFields[i]);
         }
-        for (int i = 0; i < definition.staticMethods.length; i++) {
-            if (!"<clinit>".equals(definition.staticMethods[i].name)) {
-                continue;
-            }
-            System.out.println(definition.thisClass + "." + definition.staticMethods[i].name + definition.staticMethods[i].descriptor);
+        try {
+            invokeStatic("<clinit>", "()V");
+        } catch (NoSuchMethodError _) {
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(1);
         }
-        //MethodInfo clinit = (MethodInfo) definition.staticMethods.get("<clinit>()V");
-        //if (clinit != null) {
-        //}
     }
 
-    void invokeStatic(String name, String descriptor) {
-        MethodInfo method = definition.staticMethodInfo(name, descriptor);
+    void invokeStatic(String name, String descriptor) throws Throwable {
+        MethodInfo method = definition.staticMethod(name, descriptor);
         if (method == null) {
             throw new NoSuchMethodError();
         }
-        Machine.invoke(this, method);
+        ThreadContext.current().invoke(this, method);
     }
 
-    private Object[] getStaticFields() {
+    private Object[] getStatics() {
         if (staticFields == null) {
             initialize();
         }
         return staticFields;
     }
 
-    Object getStaticField(int index) {
-        return getStaticFields()[index];
+    Object getStatic(int index) {
+        return getStatics()[index];
     }
 
-    void setStaticField(int index, Object value) {
-        getStaticFields()[index] = value;
+    void setStatic(int index, Object value) {
+        getStatics()[index] = value;
     }
 
-    int instanceFieldCount() {
+    int fieldCount() {
         int count = definition.instanceFields.length;
         if (superHandle != null) {
-            count += superHandle.instanceFieldCount();
+            count += superHandle.fieldCount();
         }
         return count;
     }

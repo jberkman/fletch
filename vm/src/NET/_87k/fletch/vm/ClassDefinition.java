@@ -24,6 +24,7 @@
 package NET._87k.fletch.vm;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 final class ClassDefinition {
 
@@ -58,7 +59,7 @@ final class ClassDefinition {
         this.staticMethods = staticMethods;
     }
 
-    private static MethodInfo methodInfo(MethodInfo[] methods, String name, String descriptor) {
+    private static MethodInfo lookupMethod(MethodInfo[] methods, String name, String descriptor) {
         for (int i = 0; i < methods.length; i++) {
             MethodInfo method = methods[i];
             if (name.equals(method.name) && descriptor.equals(method.descriptor)) {
@@ -68,12 +69,30 @@ final class ClassDefinition {
         return null;
     }
 
-    MethodInfo instanceMethodInfo(String name, String descriptor) {
-        return methodInfo(instanceMethods, name, descriptor);
+    MethodInfo method(String name, String descriptor) {
+        return lookupMethod(instanceMethods, name, descriptor);
     }
 
-    MethodInfo staticMethodInfo(String name, String descriptor) {
-        return methodInfo(staticMethods, name, descriptor);
+    MethodInfo staticMethod(String name, String descriptor) {
+        return lookupMethod(staticMethods, name, descriptor);
+    }
+
+    private static FieldInfo lookupField(FieldInfo[] fields, String name, String descriptor) {
+        for (int i = 0; i < fields.length; i++) {
+            FieldInfo field = fields[i];
+            if (name.equals(field.name) && descriptor.equals(field.descriptor)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    FieldInfo field(String name, String descriptor) {
+        return lookupField(instanceFields, name, descriptor);
+    }
+
+    FieldInfo staticField(String name, String descriptor) {
+        return lookupField(staticFields, name, descriptor);
     }
 
 }

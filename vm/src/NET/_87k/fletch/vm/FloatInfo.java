@@ -30,6 +30,10 @@ final class FloatInfo implements ConstantPoolEntry, ConstantValueInfo {
         throw new RuntimeException();
     }
 
+    public String descriptor() {
+        return "F";
+    }
+
     public Object value() {
         return value;
     }

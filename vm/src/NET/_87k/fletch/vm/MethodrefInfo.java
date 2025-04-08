@@ -24,7 +24,43 @@
 package NET._87k.fletch.vm;
 
 final class MethodrefInfo extends MemberrefInfo {
+    private MethodInfo methodInfo;
+    private ClassHandle virtualMethodClass;
+
     MethodrefInfo(ConstantPool pool, int classIndex, int nameAndTypeIndex) {
         super(pool, classIndex, nameAndTypeIndex);
     }
+
+    MethodInfo methodInfo() throws ClassNotFoundException {
+        if (methodInfo != null) {
+            return methodInfo;
+        }
+        ClassHandle classHandle = this.classHandle();
+        return methodInfo = classHandle.definition.method(name(), descriptor());
+    }
+
+    ClassHandle virtualMethodClass() throws ClassNotFoundException {
+        if (virtualMethodClass != null) {
+            return virtualMethodClass;
+        }
+        ClassHandle classHandle = this.classHandle();
+        while (classHandle != null) {
+            methodInfo = classHandle.definition.method(name(), descriptor());
+            if (methodInfo != null) {
+                virtualMethodClass = classHandle;
+                break;
+            }
+            classHandle = classHandle.superHandle;
+        }
+        return virtualMethodClass;
+    }
+
+    MethodInfo staticMethodInfo() throws ClassNotFoundException {
+        if (methodInfo != null) {
+            return methodInfo;
+        }
+        ClassHandle classHandle = this.classHandle();
+        return methodInfo = classHandle.definition.staticMethod(name(), descriptor());
+    }
+
 }

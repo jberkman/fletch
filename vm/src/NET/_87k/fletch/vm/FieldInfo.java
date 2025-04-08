@@ -27,19 +27,17 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 final class FieldInfo extends MemberInfo {
-    final ConstantValueInfo value;
-    private static final Dictionary defaultValues = new Hashtable();
+    private static final Object defaultByte = new Byte((byte) 0);
+    private static final Object defaultChar = new Character((char) 0);
+    private static final Object defaultDouble = new Double(0d);
+    private static final Object defaultFloat = new Float(0f);
+    private static final Object defaultInteger = new Integer(0);
+    private static final Object defaultLong = new Long(0L);
+    private static final Object defaultShort = new Short((short) 0);
+    private static final Object defaultBoolean = new Boolean(false);
 
-    static {
-        defaultValues.put("B", new Byte((byte) 0));
-        defaultValues.put("C", new Character((char) 0));
-        defaultValues.put("D", new Double(0d));
-        defaultValues.put("F", new Float(0f));
-        defaultValues.put("I", new Integer(0));
-        defaultValues.put("J", new Long(0L));
-        defaultValues.put("S", new Short((short) 0));
-        defaultValues.put("Z", new Boolean(false));
-    }
+    int index = -1;
+    final ConstantValueInfo value;
 
     FieldInfo(int accessFlags, String name, String descriptor, ConstantValueInfo value) {
         super(accessFlags, name, descriptor);
@@ -50,6 +48,20 @@ final class FieldInfo extends MemberInfo {
         if (value != null) {
             return value.value();
         }
-        return defaultValues.get(descriptor);
+        if (descriptor.length() > 1) {
+            return null;
+        }
+        switch (descriptor.charAt(0)) {
+            case 'B': return defaultByte;
+            case 'C': return defaultChar;
+            case 'D': return defaultDouble;
+            case 'F': return defaultFloat;
+            case 'I': return defaultInteger;
+            case 'J': return defaultLong;
+            case 'S': return defaultShort;
+            case 'Z': return defaultBoolean;
+            default:
+                throw new IllegalStateException(descriptor);
+        }
     }
 }

@@ -25,5 +25,6 @@ package NET._87k.fletch.vm;
 
 final class OpcodeResult {
     static final OpcodeResult CONTINUE = new OpcodeResult();
-    static final OpcodeResult RETURN = new OpcodeResult();
+    static final OpcodeResult RETURN0 = new OpcodeResult();
+    static final OpcodeResult RETURN1 = new OpcodeResult();
 }

@@ -40,7 +40,7 @@ class AddressRangeInputStream extends InputStream {
         if (remaining-- == 0) {
             return -1;
         }
-        return Machine.rom.load(pos++);
+        return Interpreter.rom.load(pos++);
     }
 
     public int available() throws IOException {

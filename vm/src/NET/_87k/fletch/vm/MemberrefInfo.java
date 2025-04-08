@@ -23,8 +23,6 @@
 
 package NET._87k.fletch.vm;
 
-import java.util.jar.Attributes.Name;
-
 abstract class MemberrefInfo implements ConstantPoolEntry {
 
     private final ConstantPool pool;
@@ -45,14 +43,14 @@ abstract class MemberrefInfo implements ConstantPoolEntry {
         if (className != null) {
             return className;
         }
-        return className = pool.utf8String(classIndex);
+        return className = pool.className(classIndex);
     }
 
-    ClassHandle classHandle() {
+    ClassHandle classHandle() throws ClassNotFoundException {
         if (classHandle != null) {
             return classHandle;
         }
-        return classHandle; // = ClassObjectHandle.forName(className());
+        return classHandle = ClassHandle.forNameInternal(className());
     }
 
     private NameAndTypeInfo nat() {

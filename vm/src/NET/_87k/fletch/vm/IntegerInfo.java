@@ -31,6 +31,10 @@ final class IntegerInfo implements ConstantPoolEntry, ConstantValueInfo {
         this.value = new Integer(value);
     }
 
+    public String descriptor() {
+        return "I";
+    }
+
     public Object value() {
         return value;
     }

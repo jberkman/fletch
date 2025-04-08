@@ -25,4 +25,12 @@ package java.io;
 
 public class PrintStream {
 
+    public PrintStream(String filename) {
+        //open(filename);
+    }
+
+    //private native void open(String filename);
+
+    public void println(String s) {
+    }
 }

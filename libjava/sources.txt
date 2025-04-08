@@ -13,5 +13,6 @@
 ./src/java/lang/Object.java
 ./src/java/lang/RuntimeException.java
 ./src/java/lang/String.java
+./src/java/lang/StringBuffer.java
 ./src/java/lang/System.java
 ./src/java/lang/Throwable.java

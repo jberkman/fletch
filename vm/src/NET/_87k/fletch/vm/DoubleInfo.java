@@ -30,6 +30,10 @@ final class DoubleInfo implements ConstantPoolEntry, ConstantValueInfo {
         throw new RuntimeException();
     }
 
+    public String descriptor() {
+        return "D";
+    }
+
     public Object value() {
         return value;
     }
