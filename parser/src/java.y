@@ -254,7 +254,9 @@ Primary -> Result<ExpressionNode, ()>:
 
 PrimaryNoNewArray -> Result<ExpressionNode, ()>:
     Literal { Ok(Expression::new_literal_node($span, $1?)) }
+    | FieldAccess { Ok(Expression::new_field_access_node($span, $1?)) }
     | MethodInvocation { Ok(Expression::new_method_invocation_node($span, $1?)) }
+    | ArrayAccess { Ok(Expression::new_array_access_node($span, $1?)) }
     ;
 
 ArgumentListOpt -> Result<Option<ExpressionList>, ()>:
@@ -272,8 +274,18 @@ ArgumentList -> Result<ExpressionList, ()>:
     }
     ;
 
+FieldAccess -> Result<FieldAccessNode, ()>:
+    Primary 'DOT' Identifier { Ok(FieldAccess::new_primary_node($span, $1?, $3?)) }
+    ;
+
 MethodInvocation -> Result<MethodInvocationNode, ()>:
-    Primary 'DOT' Identifier 'LPAREN' ArgumentListOpt 'RPAREN' { Ok(MethodInvocation::new_primary_node($span, $1?, $3?, $5?)) }
+    Name 'LPAREN' ArgumentListOpt 'RPAREN' { Ok(MethodInvocation::new_name_node($span, $1?, $3?)) }
+    | Primary 'DOT' Identifier 'LPAREN' ArgumentListOpt 'RPAREN' { Ok(MethodInvocation::new_primary_node($span, $1?, $3?, $5?)) }
+    ;
+
+ArrayAccess -> Result<ArrayAccessNode, ()>:
+    Name 'LBRACKET' Expression 'RBRACKET' { Ok(ArrayAccess::new_name_node($span, $1?, $3?)) }
+    | PrimaryNoNewArray 'LBRACKET' Expression 'RBRACKET' { Ok(ArrayAccess::new_primary_node($span, $1?, $3?)) }
     ;
 
 PostfixExpression -> Result<ExpressionNode, ()>:
@@ -294,11 +306,11 @@ MultiplicativeExpression -> Result<ExpressionNode, ()>:
 
 AdditiveExpression -> Result<ExpressionNode, ()>:
     MultiplicativeExpression { $1 }
+    | AdditiveExpression 'PLUS' MultiplicativeExpression { Ok(Expression::new_addition_node($span, $1?, $3?)) }
     ;
 
 ShiftExpression -> Result<ExpressionNode, ()>:
     AdditiveExpression { $1 }
-    | AdditiveExpression 'PLUS' MultiplicativeExpression { Ok(Expression::new_addition_node($span, $1?, $3?)) }
     ;
 
 RelationalExpression -> Result<ExpressionNode, ()>:

@@ -78,10 +78,11 @@ fn main() {
     }
 
     let (files, args) = matches.free.split_at(1);
-    println!("Compiling file: {} with main({:?})", files[0], args);
+    let file = &files[0];
+    println!("Compiling file: {} with main({:?})", file, args);
 
     let mut data = String::new();
-    File::open(files[0].clone())
+    File::open(file.clone())
         .expect("Failed to read file")
         .read_to_string(&mut data)
         .expect("Failed to read file");
@@ -104,5 +105,5 @@ fn main() {
                 exit(1);
             }
         }
-    }    
+    }
 }
