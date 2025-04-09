@@ -33,15 +33,15 @@ Identifier -> Result<IdentifierNode, ()>:
     ;
 
 Literal -> Result<LiteralNode, ()>:
-    "DEC" { Ok(Literal::new_decimal_node($span)) }
-    | "HEX" { Ok(Literal::new_hex_node($span)) }
-    | "OCT" { Ok(Literal::new_octal_node($span)) }
-    | "FLT" { Ok(Literal::new_float_node($span)) }
-    | "FALSE" { Ok(Literal::new_bool_node($span, false)) }
-    | "TRUE" { Ok(Literal::new_bool_node($span, true)) }
-    | "CHR" { Ok(Literal::new_char_node($span)) }
-    | "STR" { Ok(Literal::new_string_node($span)) }
-    | "NULL" { Ok(Literal::new_null_node($span)) }
+    'DEC' { Ok(Literal::new_decimal_node($span)) }
+    | 'HEX' { Ok(Literal::new_hex_node($span)) }
+    | 'OCT' { Ok(Literal::new_octal_node($span)) }
+    | 'FLT' { Ok(Literal::new_float_node($span)) }
+    | 'FALSE' { Ok(Literal::new_bool_node($span, false)) }
+    | 'TRUE' { Ok(Literal::new_bool_node($span, true)) }
+    | 'CHR' { Ok(Literal::new_char_node($span)) }
+    | 'STR' { Ok(Literal::new_string_node($span)) }
+    | 'NULL' { Ok(Literal::new_null_node($span)) }
     ;
 
 // Types, Values, and Vars
@@ -298,6 +298,7 @@ AdditiveExpression -> Result<ExpressionNode, ()>:
 
 ShiftExpression -> Result<ExpressionNode, ()>:
     AdditiveExpression { $1 }
+    | AdditiveExpression 'PLUS' MultiplicativeExpression { Ok(Expression::new_addition_node($span, $1?, $3?)) }
     ;
 
 RelationalExpression -> Result<ExpressionNode, ()>:

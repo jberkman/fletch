@@ -10,6 +10,8 @@
 , "COMMA"
 \. "DOT"
 
+\+ "PLUS"
+
 abstract "ABSTRACT"
 boolean "BOOLEAN"
 byte "BYTE"

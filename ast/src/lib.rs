@@ -242,7 +242,7 @@ impl ClassBody {
         Node::new(span,  Self { declarations })
     }
 }
-    
+
 pub type ClassBodyNode = Node<ClassBody>;
 
 #[derive(Clone, Debug)]
@@ -275,7 +275,7 @@ impl VariableDeclaratorId {
     pub fn new_singleton_node(span: Span, identifier: IdentifierNode) -> VariableDeclaratorIdNode {
         Node::new(span, Self::Singleton(identifier))
     }
-    
+
     pub fn new_array_node(span: Span, array: Box<VariableDeclaratorIdNode>) -> VariableDeclaratorIdNode {
         Node::new(span, Self::Array(array))
     }
@@ -299,7 +299,7 @@ impl MethodDeclaration {
         Node::new(span, Self { modifiers, return_type, declarator, body })
     }
 }
-    
+
 pub type MethodDeclarationNode = Node<MethodDeclaration>;
 
 #[derive(Clone, Debug)]
@@ -313,7 +313,7 @@ impl MethodDeclarator {
         Node::new(span, Self { identifier, parameter_list })
     }
 }
-    
+
 pub type MethodDeclaratorNode = Node<MethodDeclarator>;
 #[derive(Clone, Debug)]
 pub struct FormalParameter {
@@ -417,11 +417,16 @@ impl Statement {
 
 #[derive(Clone, Debug)]
 pub enum Expression {
+    Addition(Box<ExpressionNode>, Box<ExpressionNode>),
     Literal(LiteralNode),
     MethodInvocation(MethodInvocationNode),
 }
 
 impl Expression {
+    pub fn new_addition_node(span: Span, additive_expression: ExpressionNode, multiplicative_expression: ExpressionNode) -> ExpressionNode {
+        Node::new(span, Self::Addition(Box::new(additive_expression), Box::new(multiplicative_expression)))
+    }
+
     pub fn new_literal_node(span: Span, literal: LiteralNode) -> ExpressionNode {
         Node::new(span, Self::Literal(literal))
     }

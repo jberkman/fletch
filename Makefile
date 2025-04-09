@@ -12,7 +12,7 @@ javac65:
 	cargo b
 
 vm-6502: javac65
-	cargo run -p fletch-javac65 --bin javac65
+	cargo run -p fletch-javac65 --bin javac65 -- -S
 
 vm-jvm:
 	mkdir -p $(BIN_DIR)/$@

@@ -62,6 +62,13 @@ mod sep {
 }
 
 #[cfg(test)]
+mod op {
+    use super::lex_and_cmp;
+
+    test_token!(test_plus, "+", T_PLUS);
+}
+
+#[cfg(test)]
 mod kw {
     use super::lex_and_cmp;
 
@@ -135,10 +142,10 @@ fn test_hello() {
     lex_and_cmp(r#"
         class Hello {
             public static void main(String[] args) {
-                System.out.println("Hello, World!");
+                System.out.println("Hello, " + args[0] + "!");
             }
         }
-    "#, vec![ 
+    "#, vec![
         fletch_parser::T_CLASS,
         fletch_parser::T_ID,
         fletch_parser::T_LBRACE,
@@ -159,6 +166,13 @@ fn test_hello() {
         fletch_parser::T_DOT,
         fletch_parser::T_ID,
         fletch_parser::T_LPAREN,
+        fletch_parser::T_STR,
+        fletch_parser::T_PLUS,
+        fletch_parser::T_ID,
+        fletch_parser::T_LBRACKET,
+        fletch_parser::T_DEC,
+        fletch_parser::T_RBRACKET,
+        fletch_parser::T_PLUS,
         fletch_parser::T_STR,
         fletch_parser::T_RPAREN,
         fletch_parser::T_SEMIC,
