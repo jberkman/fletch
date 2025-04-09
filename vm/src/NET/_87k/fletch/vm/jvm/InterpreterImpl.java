@@ -39,5 +39,4 @@ public class InterpreterImpl extends Interpreter {
         boot(args[1], machineArgs);
     }
 
-
 }

@@ -21,17 +21,25 @@
 // SOFTWARE.
 
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+package NET._87k.fletch.vm._6502;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+import NET._87k.fletch.vm.Rom;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+/**
+ * Virtual implementation of 6502 processor, used for VM development.
+ */
+class RomImpl implements Rom {
+    final static int ROM_BASE = 0x8000;
+    final static int ROM_SIZE = 0x8000;
+
+    public int baseAddress() {
+        return ROM_BASE;
     }
+
+    public int size() {
+        return ROM_SIZE;
+    }
+
+    public native int load(int addr);
+
 }

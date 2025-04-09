@@ -21,17 +21,22 @@
 // SOFTWARE.
 
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+package NET._87k.fletch.vm._6502;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+import NET._87k.fletch.vm.Interpreter;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+public class InterpreterImpl extends Interpreter {
+
+    public static void main(String[] args) {
+        rom = new RomImpl();
+        classFileLoader = new ClassFileLoaderImpl();
+
+        String[] interpreterArgs = new String[args.length - 1];
+        for (int i = 0; i < interpreterArgs.length; i++) {
+            interpreterArgs[i] = args[i+2];
+        }
+
+        boot(args[0], interpreterArgs);
     }
+
 }

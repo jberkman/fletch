@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
 members = [
-    "ast", "empty", "hello", "javac65", "libjava", "parser",
+    "ast", "javac65", "parser"
 ]

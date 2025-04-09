@@ -1,7 +1,7 @@
 package java.lang;
 
 public final class StringBuffer {
-    StringBuffer append(String _) {
+    public StringBuffer append(String _) {
         return new StringBuffer();
     }
 }
