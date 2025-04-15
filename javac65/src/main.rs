@@ -25,6 +25,7 @@ use getopts::Options;
 use std::{env, fs::File, io::Read, process::exit};
 
 use fletch_parser::{lexerdef, parse, token_epp};
+use fletch_type_checker::type_check;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -91,19 +92,31 @@ fn main() {
     let lexer = lexerdef.lexer(&data);
     let (ast, errs) = parse(&lexer);
     if !errs.is_empty() {
-        for err in errs {
-            eprintln!("{}", err.pp(&lexer, &token_epp))
+        let len = errs.len();
+        for (i, err) in errs.iter().enumerate() {
+            eprintln!("parse error ({:03} of {}): {}", i, len, err.pp(&lexer, &token_epp))
         }
         exit(1);
     }
 
-    if let Some(ast) = ast {
-        match ast {
-            Ok(ast) => println!("{:#?}", ast),
-            Err(_) => {
-                eprintln!("Unknown parse error");
-                exit(1);
-            }
-        }
-    }
+    let ast = ast.unwrap_or_else(|| {
+        eprintln!("Unknown parse error");
+        exit(1);
+    }).unwrap_or_else(|e| {
+        eprintln!("Parse error: {:?}", e);
+        exit(1);
+    });
+
+    type_check(&ast).unwrap_or_else(|e| {
+        eprint!("Type checking error: {:?}", e);
+        exit(1);
+    })
+
+    //if let Some(ast) = ast {
+    //    match ast {
+    //        Ok(ast) => println!("{:#?}", ast),
+    //        Err(_) => {
+    //        }
+    //    }
+    //}
 }
