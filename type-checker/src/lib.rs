@@ -33,11 +33,13 @@ pub enum Error {
 fn check_method_decl(method: &MethodDeclNode) -> Result<(), Error> {
     if let Some(mods) = &method.data.modifiers {
         let mut has_non_access = false;
+        let mut has_static = false;
         let mut has_visibility = false;
         for modifier in &mods.data {
             match modifier.data {
                 Modifier::Abstract | Modifier::Final if !has_non_access => has_non_access = true,
                 Modifier::Private | Modifier::Protected | Modifier::Public if !has_visibility => has_visibility = true,
+                Modifier::Static if !has_static => has_static = true,
                 _ => return Err(Error::InvalidModifier(modifier.span)),
             }
         }

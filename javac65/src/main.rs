@@ -22,9 +22,9 @@
 
 
 use getopts::Options;
-use std::{env, fs::File, io::Read, process::exit};
+use std::{env, process::exit};
 
-use fletch_parser::{lexerdef, parse, token_epp};
+use fletch_parser::parse_file;
 use fletch_type_checker::type_check;
 
 fn main() {
@@ -80,37 +80,18 @@ fn main() {
 
     let (files, args) = matches.free.split_at(1);
     let file = &files[0];
+
     println!("Compiling file: {} with main({:?})", file, args);
 
-    let mut data = String::new();
-    File::open(file.clone())
-        .expect("Failed to read file")
-        .read_to_string(&mut data)
-        .expect("Failed to read file");
-
-    let lexerdef = lexerdef();
-    let lexer = lexerdef.lexer(&data);
-    let (ast, errs) = parse(&lexer);
-    if !errs.is_empty() {
-        let len = errs.len();
-        for (i, err) in errs.iter().enumerate() {
-            eprintln!("parse error ({:03} of {}): {}", i, len, err.pp(&lexer, &token_epp))
-        }
-        exit(1);
-    }
-
-    let ast = ast.unwrap_or_else(|| {
-        eprintln!("Unknown parse error");
-        exit(1);
-    }).unwrap_or_else(|e| {
-        eprintln!("Parse error: {:?}", e);
+    let ast = parse_file(file).unwrap_or_else(|e| {
+        eprintln!("{}", e);
         exit(1);
     });
 
     type_check(&ast).unwrap_or_else(|e| {
         eprint!("Type checking error: {:?}", e);
         exit(1);
-    })
+    });
 
     //if let Some(ast) = ast {
     //    match ast {

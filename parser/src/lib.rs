@@ -20,12 +20,65 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-use lrlex::lrlex_mod;
-use lrpar::lrpar_mod;
-
 lrlex_mod!("java.l");
 lrpar_mod!("java.y");
 
+use fletch_ast::CompilationUnitNode;
 pub use java_l::*;
 pub use java_y::*;
+use lrlex::lrlex_mod;
+use lrpar::lrpar_mod;
+use std::{
+    error::Error as StdError,
+    fmt::Display,
+    fs::File,
+    io::{Error as IoError, Read},
+};
+
+#[derive(Debug)]
+pub enum Error {
+    Io(IoError),
+    Lexer(String),
+    Parse(Vec<Error>),
+}
+
+impl From<IoError> for Error {
+    fn from(e: IoError) -> Self {
+        Self::Io(e)
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(e) => e.fmt(f),
+            Self::Lexer(s) => s.fmt(f),
+            Self::Parse(errs) => {
+                for err in errs {
+                    err.fmt(f)?;
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
+impl StdError for Error {}
+
+pub fn parse_file(file: &String) -> Result<CompilationUnitNode, Error> {
+    let mut buf = String::new();
+    File::open(file)?.read_to_string(&mut buf)?;
+
+    let lexerdef = lexerdef();
+    let lexer = lexerdef.lexer(&buf);
+    let (ast, errs) = parse(&lexer);
+    if errs.is_empty() {
+        ast.unwrap()
+    } else {
+        Err(Error::Parse(
+            errs.iter()
+                .map(|e| Error::Lexer(format!("{}: {}", file, e.pp(&lexer, &token_epp))))
+                .collect(),
+        ))
+    }
+}
