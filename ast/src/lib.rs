@@ -149,36 +149,36 @@ impl Name {
 
 #[derive(Clone, Debug)]
 pub struct CompilationUnit {
-    pub type_declarations: Option<TypeDeclarations>,
+    pub type_decls: Option<TypeDecls>,
 }
 
 pub type CompilationUnitNode = Node<CompilationUnit>;
 
 impl CompilationUnit {
-    pub fn new_node(span: Span, type_declarations: Option<TypeDeclarations>) -> CompilationUnitNode {
-        Node::new(span, Self { type_declarations })
+    pub fn new_node(span: Span, type_decls: Option<TypeDecls>) -> CompilationUnitNode {
+        Node::new(span, Self { type_decls })
     }
 }
 
 #[derive(Clone, Debug)]
-pub enum TypeDeclaration {
-    Class(ClassDeclarationNode),
+pub enum TypeDecl {
+    Class(ClassDeclNode),
     Empty,
 }
 
-pub type TypeDeclarationNode = Node<TypeDeclaration>;
-pub type TypeDeclarations = VecNode<TypeDeclarationNode>;
+pub type TypeDeclNode = Node<TypeDecl>;
+pub type TypeDecls = VecNode<TypeDeclNode>;
 
-impl TypeDeclaration {
-    pub fn new_class_node(span: Span, class_declaration: ClassDeclarationNode) -> TypeDeclarationNode {
-        Node::new(span, Self::Class(class_declaration))
+impl TypeDecl {
+    pub fn new_class_node(span: Span, class_decl: ClassDeclNode) -> TypeDeclNode {
+        Node::new(span, Self::Class(class_decl))
     }
 
-    pub fn new_empty_node(span: Span) -> TypeDeclarationNode {
-        Node::new(span,  Self::Empty)
+    pub fn new_empty_node(span: Span) -> TypeDeclNode {
+        Node::new(span, Self::Empty)
     }
 
-    pub fn new_list(span: Span, item: TypeDeclarationNode) -> TypeDeclarations {
+    pub fn new_list(span: Span, item: TypeDeclNode) -> TypeDecls {
         Node::new(span, vec![item])
     }
 }
@@ -217,47 +217,59 @@ impl Modifier {
 //// Class Decl
 
 #[derive(Clone, Debug)]
-pub struct ClassDeclaration {
+pub struct ClassDecl {
     pub modifiers: Option<Modifiers>,
     pub identifier: IdentifierNode,
     pub body: ClassBodyNode,
 }
 
-pub type ClassDeclarationNode = Node<ClassDeclaration>;
+pub type ClassDeclNode = Node<ClassDecl>;
 
-impl ClassDeclaration {
-    pub fn new_node(span: Span, modifiers: Option<Modifiers>, identifier: IdentifierNode, body: ClassBodyNode) -> ClassDeclarationNode {
-        Node::new(span,  Self { modifiers, identifier, body })
+impl ClassDecl {
+    pub fn new_node(
+        span: Span,
+        modifiers: Option<Modifiers>,
+        identifier: IdentifierNode,
+        body: ClassBodyNode,
+    ) -> ClassDeclNode {
+        Node::new(
+            span,
+            Self {
+                modifiers,
+                identifier,
+                body,
+            },
+        )
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct ClassBody {
-    pub declarations: Option<ClassBodyDeclarations>,
+    pub decls: Option<ClassBodyDecls>,
 }
 
 pub type ClassBodyNode = Node<ClassBody>;
 
 impl ClassBody {
-    pub fn new_node(span: Span, declarations: Option<ClassBodyDeclarations>) -> ClassBodyNode {
-        Node::new(span,  Self { declarations })
+    pub fn new_node(span: Span, decls: Option<ClassBodyDecls>) -> ClassBodyNode {
+        Node::new(span, Self { decls })
     }
 }
 
 #[derive(Clone, Debug)]
-pub enum ClassBodyDeclaration {
-    Method(MethodDeclarationNode),
+pub enum ClassBodyDecl {
+    Method(MethodDeclNode),
 }
 
-pub type ClassBodyDeclarationNode = Node<ClassBodyDeclaration>;
-pub type ClassBodyDeclarations = VecNode<ClassBodyDeclarationNode>;
+pub type ClassBodyDeclNode = Node<ClassBodyDecl>;
+pub type ClassBodyDecls = VecNode<ClassBodyDeclNode>;
 
-impl ClassBodyDeclaration {
-    pub fn new_method_node(span: Span, method: MethodDeclarationNode) -> ClassBodyDeclarationNode {
+impl ClassBodyDecl {
+    pub fn new_method_node(span: Span, method: MethodDeclNode) -> ClassBodyDeclNode {
         Node::new(span, Self::Method(method))
     }
 
-    pub fn new_list(span: Span, item: ClassBodyDeclarationNode) -> ClassBodyDeclarations {
+    pub fn new_list(span: Span, item: ClassBodyDeclNode) -> ClassBodyDecls {
         Node::new(span, vec![item])
     }
 }
@@ -277,7 +289,10 @@ impl VariableDeclaratorId {
         Node::new(span, Self::Singleton(identifier))
     }
 
-    pub fn new_array_node(span: Span, array: Box<VariableDeclaratorIdNode>) -> VariableDeclaratorIdNode {
+    pub fn new_array_node(
+        span: Span,
+        array: Box<VariableDeclaratorIdNode>,
+    ) -> VariableDeclaratorIdNode {
         Node::new(span, Self::Array(array))
     }
 }
@@ -285,18 +300,32 @@ impl VariableDeclaratorId {
 //// Method Declarations
 
 #[derive(Clone, Debug)]
-pub struct MethodDeclaration {
+pub struct MethodDecl {
     pub modifiers: Option<Modifiers>,
     pub return_type: Option<TypeNode>,
     pub declarator: MethodDeclaratorNode,
     pub body: MethodBodyNode,
 }
 
-pub type MethodDeclarationNode = Node<MethodDeclaration>;
+pub type MethodDeclNode = Node<MethodDecl>;
 
-impl MethodDeclaration {
-    pub fn new_node(span: Span, modifiers: Option<Modifiers>, return_type: Option<TypeNode>, declarator: MethodDeclaratorNode, body: MethodBodyNode) -> MethodDeclarationNode {
-        Node::new(span, Self { modifiers, return_type, declarator, body })
+impl MethodDecl {
+    pub fn new_node(
+        span: Span,
+        modifiers: Option<Modifiers>,
+        return_type: Option<TypeNode>,
+        declarator: MethodDeclaratorNode,
+        body: MethodBodyNode,
+    ) -> MethodDeclNode {
+        Node::new(
+            span,
+            Self {
+                modifiers,
+                return_type,
+                declarator,
+                body,
+            },
+        )
     }
 }
 
@@ -309,8 +338,18 @@ pub struct MethodDeclarator {
 pub type MethodDeclaratorNode = Node<MethodDeclarator>;
 
 impl MethodDeclarator {
-    pub fn new_node(span: Span, identifier: IdentifierNode, parameter_list: Option<FormalParameterList>) -> MethodDeclaratorNode {
-        Node::new(span, Self { identifier, parameter_list })
+    pub fn new_node(
+        span: Span,
+        identifier: IdentifierNode,
+        parameter_list: Option<FormalParameterList>,
+    ) -> MethodDeclaratorNode {
+        Node::new(
+            span,
+            Self {
+                identifier,
+                parameter_list,
+            },
+        )
     }
 }
 
@@ -324,7 +363,11 @@ pub type FormalParameterNode = Node<FormalParameter>;
 pub type FormalParameterList = VecNode<FormalParameterNode>;
 
 impl FormalParameter {
-    pub fn new_node(span: Span, type_: TypeNode, identifier: VariableDeclaratorIdNode) -> FormalParameterNode {
+    pub fn new_node(
+        span: Span,
+        type_: TypeNode,
+        identifier: VariableDeclaratorIdNode,
+    ) -> FormalParameterNode {
         Node::new(span, Self { type_, identifier })
     }
 
@@ -411,7 +454,6 @@ impl Statement {
     }
 }
 
-
 // Expressions
 
 #[derive(Clone, Debug)]
@@ -427,8 +469,18 @@ pub type ExpressionNode = Node<Expression>;
 pub type ExpressionList = VecNode<ExpressionNode>;
 
 impl Expression {
-    pub fn new_addition_node(span: Span, additive_expression: ExpressionNode, multiplicative_expression: ExpressionNode) -> ExpressionNode {
-        Node::new(span, Self::Addition(Box::new(additive_expression), Box::new(multiplicative_expression)))
+    pub fn new_addition_node(
+        span: Span,
+        additive_expression: ExpressionNode,
+        multiplicative_expression: ExpressionNode,
+    ) -> ExpressionNode {
+        Node::new(
+            span,
+            Self::Addition(
+                Box::new(additive_expression),
+                Box::new(multiplicative_expression),
+            ),
+        )
     }
 
     pub fn new_array_access_node(span: Span, array_access: ArrayAccessNode) -> ExpressionNode {
@@ -443,7 +495,10 @@ impl Expression {
         Node::new(span, Self::Literal(literal))
     }
 
-    pub fn new_method_invocation_node(span: Span, method_invocation: MethodInvocationNode) -> ExpressionNode {
+    pub fn new_method_invocation_node(
+        span: Span,
+        method_invocation: MethodInvocationNode,
+    ) -> ExpressionNode {
         Node::new(span, Self::MethodInvocation(method_invocation))
     }
 
@@ -460,7 +515,11 @@ pub enum FieldAccess {
 pub type FieldAccessNode = Node<FieldAccess>;
 
 impl FieldAccess {
-    pub fn new_primary_node(span: Span, primary: ExpressionNode, identifier: IdentifierNode) -> FieldAccessNode {
+    pub fn new_primary_node(
+        span: Span,
+        primary: ExpressionNode,
+        identifier: IdentifierNode,
+    ) -> FieldAccessNode {
         Node::new(span, Self::Primary(Box::new(primary), identifier))
     }
 }
@@ -474,12 +533,24 @@ pub enum MethodInvocation {
 pub type MethodInvocationNode = Node<MethodInvocation>;
 
 impl MethodInvocation {
-    pub fn new_name_node(span: Span, name: NameNode, argument_list: Option<ExpressionList>) -> MethodInvocationNode {
+    pub fn new_name_node(
+        span: Span,
+        name: NameNode,
+        argument_list: Option<ExpressionList>,
+    ) -> MethodInvocationNode {
         Node::new(span, Self::Name(name, argument_list))
     }
 
-    pub fn new_primary_node(span: Span, primary: ExpressionNode, identifier: IdentifierNode, argment_list: Option<ExpressionList>) -> MethodInvocationNode {
-        Node::new(span, Self::Primary(Box::new(primary), identifier, argment_list))
+    pub fn new_primary_node(
+        span: Span,
+        primary: ExpressionNode,
+        identifier: IdentifierNode,
+        argment_list: Option<ExpressionList>,
+    ) -> MethodInvocationNode {
+        Node::new(
+            span,
+            Self::Primary(Box::new(primary), identifier, argment_list),
+        )
     }
 }
 
@@ -496,8 +567,11 @@ impl ArrayAccess {
         Node::new(span, Self::Name(name, Box::new(index)))
     }
 
-    pub fn new_primary_node(span: Span, primary: ExpressionNode, index: ExpressionNode) -> ArrayAccessNode {
+    pub fn new_primary_node(
+        span: Span,
+        primary: ExpressionNode,
+        index: ExpressionNode,
+    ) -> ArrayAccessNode {
         Node::new(span, Self::Primary(Box::new(primary), Box::new(index)))
     }
 }
-

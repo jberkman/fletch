@@ -69,17 +69,17 @@ Name -> Result<NameNode, ()>:
 // Packages
 
 CompilationUnit -> Result<CompilationUnitNode, ()>:
-    TypeDeclarationsOpt { Ok(CompilationUnit::new_node($span, $1?)) }
+    TypeDeclsOpt { Ok(CompilationUnit::new_node($span, $1?)) }
     ;
 
-TypeDeclarationsOpt -> Result<Option<TypeDeclarations>, ()>:
-    TypeDeclarations { Ok(Some($1?)) }
+TypeDeclsOpt -> Result<Option<TypeDecls>, ()>:
+    TypeDecls { Ok(Some($1?)) }
     | /* opt */ { Ok(None) }
     ;
 
-TypeDeclarations -> Result<TypeDeclarations, ()>:
-    TypeDeclaration { Ok(TypeDeclaration::new_list($span, $1?)) }
-    | TypeDeclarations TypeDeclaration {
+TypeDecls -> Result<TypeDecls, ()>:
+    TypeDecl { Ok(TypeDecl::new_list($span, $1?)) }
+    | TypeDecls TypeDecl {
         let mut v = $1?;
         v.span = $span;
         v.data.push($2?);
@@ -87,9 +87,9 @@ TypeDeclarations -> Result<TypeDeclarations, ()>:
     }
     ;
 
-TypeDeclaration -> Result<TypeDeclarationNode, ()>:
-    ClassDeclaration { Ok(TypeDeclaration::new_class_node($span, $1?)) }
-    | 'SEMIC' { Ok(TypeDeclaration::new_empty_node($span)) }
+TypeDecl -> Result<TypeDeclNode, ()>:
+    ClassDecl { Ok(TypeDecl::new_class_node($span, $1?)) }
+    | 'SEMIC' { Ok(TypeDecl::new_empty_node($span)) }
     ;
 
 // Only in LALR(1) Grammer
@@ -126,22 +126,22 @@ Modifier -> Result<ModifierNode, ()>:
 
 //// Class Decl
 
-ClassDeclaration -> Result<ClassDeclarationNode, ()>:
-    ModifiersOpt 'CLASS' Identifier ClassBody { Ok(ClassDeclaration::new_node($span, $1?, $3?, $4?)) }
+ClassDecl -> Result<ClassDeclNode, ()>:
+    ModifiersOpt 'CLASS' Identifier ClassBody { Ok(ClassDecl::new_node($span, $1?, $3?, $4?)) }
     ;
 
 ClassBody -> Result<ClassBodyNode, ()>:
-    'LBRACE' ClassBodyDeclarationsOpt 'RBRACE' { Ok(ClassBody::new_node($span, $2?)) }
+    'LBRACE' ClassBodyDeclsOpt 'RBRACE' { Ok(ClassBody::new_node($span, $2?)) }
     ;
 
-ClassBodyDeclarationsOpt -> Result<Option<ClassBodyDeclarations>, ()>:
-    ClassBodyDeclarations { Ok(Some($1?)) }
+ClassBodyDeclsOpt -> Result<Option<ClassBodyDecls>, ()>:
+    ClassBodyDecls { Ok(Some($1?)) }
     | /* opt */ { Ok(None) }
     ;
 
-ClassBodyDeclarations -> Result<ClassBodyDeclarations, ()>:
-    ClassBodyDeclaration { Ok(ClassBodyDeclaration::new_list($span, $1?)) }
-    | ClassBodyDeclarations ClassBodyDeclaration {
+ClassBodyDecls -> Result<ClassBodyDecls, ()>:
+    ClassBodyDecl { Ok(ClassBodyDecl::new_list($span, $1?)) }
+    | ClassBodyDecls ClassBodyDecl {
         let mut v = $1?;
         v.span = $span;
         v.data.push($2?);
@@ -149,21 +149,21 @@ ClassBodyDeclarations -> Result<ClassBodyDeclarations, ()>:
     }
     ;
 
-ClassBodyDeclaration -> Result<ClassBodyDeclarationNode, ()>:
-    MethodDeclaration { Ok(ClassBodyDeclaration::new_method_node($span, $1?)) }
+ClassBodyDecl -> Result<ClassBodyDeclNode, ()>:
+    MethodDecl { Ok(ClassBodyDecl::new_method_node($span, $1?)) }
     ;
 
-//// Field Declarations
+//// Field Decls
 
 VariableDeclaratorId -> Result<VariableDeclaratorIdNode, ()>:
     Identifier { Ok(VariableDeclaratorId::new_singleton_node($span, $1?)) }
     | VariableDeclaratorId 'LBRACKET' 'RBRACKET' { Ok(VariableDeclaratorId::new_array_node($span, Box::new($1?))) }
     ;
 
-//// Method Declarations
+//// Method Decls
 
-MethodDeclaration -> Result<MethodDeclarationNode, ()>:
-    ModifiersOpt 'VOID' MethodDeclarator MethodBody { Ok(MethodDeclaration::new_node($span, $1?, None, $3?, $4?)) }
+MethodDecl -> Result<MethodDeclNode, ()>:
+    ModifiersOpt 'VOID' MethodDeclarator MethodBody { Ok(MethodDecl::new_node($span, $1?, None, $3?, $4?)) }
     ;
 
 MethodDeclarator -> Result<MethodDeclaratorNode, ()>:
@@ -196,11 +196,11 @@ MethodBody -> Result<MethodBodyNode, ()>:
 
 //// Static Inits
 
-//// Ctor Declarations
+//// Ctor Decls
 
 // Interfaces
 
-//// Interface Declarations
+//// Interface Decls
 
 // Arrays
 
@@ -226,7 +226,7 @@ BlockStatements -> Result<BlockStatements, ()>:
     ;
 
 BlockStatement -> Result<BlockStatementNode, ()>:
-    // LclVarDeclarationstatement
+    // LclVarDeclstatement
     Statement { Ok(BlockStatement::new_statement_node($span, $1?)) }
     ;
 
