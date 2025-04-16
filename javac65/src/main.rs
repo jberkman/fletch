@@ -20,12 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-use getopts::Options;
-use std::{env, process::exit};
+mod type_checker;
 
 use fletch_parser::parse_file;
-use fletch_type_checker::type_check;
+use getopts::Options;
+use std::{env, process::exit};
+use type_checker::type_check;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

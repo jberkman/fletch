@@ -8,6 +8,7 @@ name = "javac65"
 path = "src/main.rs"
 
 [dependencies]
+cfgrammar = "0.13"
+fletch-ast = { path = "../ast" }
 fletch-parser = { path = "../parser" }
-fletch-type-checker = { path = "../type-checker" }
 getopts = "0.2"

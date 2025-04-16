@@ -1,8 +1,0 @@
-[package]
-name = "fletch-type-checker"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-cfgrammar = "0.13"
-fletch-ast = { path = "../ast" }

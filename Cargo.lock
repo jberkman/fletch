@@ -102,8 +102,9 @@ dependencies = [
 name = "fletch-javac65"
 version = "0.1.0"
 dependencies = [
+ "cfgrammar",
+ "fletch-ast",
  "fletch-parser",
- "fletch-type-checker",
  "getopts",
 ]
 
@@ -115,14 +116,6 @@ dependencies = [
  "fletch-ast",
  "lrlex",
  "lrpar",
-]
-
-[[package]]
-name = "fletch-type-checker"
-version = "0.1.0"
-dependencies = [
- "cfgrammar",
- "fletch-ast",
 ]
 
 [[package]]
