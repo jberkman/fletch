@@ -20,11 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+mod class_loader;
 mod type_checker;
 
-use fletch_parser::parse_file;
+use class_loader::ClassLoader;
 use getopts::Options;
-use std::{env, process::exit};
+use std::{env, path::PathBuf, process::exit};
 use type_checker::type_check;
 
 fn main() {
@@ -36,15 +37,15 @@ fn main() {
         .optflag("h", "help", "Help (this text)")
         .optflag("S", "", "Compile but don't assemble and link")
         .optflag("V", "version", "Print the version number")
-        .optopt("C", "config", "Use linker config", "name")
+        .optopt("C", "config", "Use linker config", "<name>")
         .optopt(
-            "j",
-            "java",
-            "Where to place generated Java stubs",
-            "directory",
+            "",
+            "sourcepath",
+            "Where to find Java source files",
+            "<path>",
         )
-        .optopt("o", "", "Name the output file", "name")
-        .optopt("t", "target", "Set the target system", "sys");
+        .optopt("o", "", "Name the output file", "<name>")
+        .optopt("t", "target", "Set the target system", "<sys>");
 
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -83,7 +84,10 @@ fn main() {
 
     println!("Compiling file: {} with main({:?})", file, args);
 
-    let ast = parse_file(file).unwrap_or_else(|e| {
+    let sourcepath = matches.opt_get_default("sourcepath", ".".to_string()).unwrap();
+    let mut loader = ClassLoader::new(&sourcepath);
+
+    let ast = loader.load_file(&PathBuf::from(file)).unwrap_or_else(|e| {
         eprintln!("{}", e);
         exit(1);
     });
@@ -93,11 +97,5 @@ fn main() {
         exit(1);
     });
 
-    //if let Some(ast) = ast {
-    //    match ast {
-    //        Ok(ast) => println!("{:#?}", ast),
-    //        Err(_) => {
-    //        }
-    //    }
-    //}
+    println!("{:#?}", ast);
 }
